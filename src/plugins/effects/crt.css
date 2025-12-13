@@ -1,0 +1,188 @@
+/**
+ * CRT Effects - Retro monitor visual styles
+ *
+ * These effects overlay on top of the terminal to simulate
+ * the look of an old CRT monitor.
+ */
+
+/* Container for all CRT effects */
+.dos-terminal-crt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* ============================================================================
+   Scanlines Effect
+   Creates horizontal lines that simulate CRT phosphor rows
+   ============================================================================ */
+
+.dos-terminal-crt__scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, var(--crt-scanline-opacity, 0.1)) 0px,
+    rgba(0, 0, 0, var(--crt-scanline-opacity, 0.1)) 1px,
+    transparent 1px,
+    transparent var(--crt-scanline-spacing, 2px)
+  );
+  pointer-events: none;
+}
+
+/* ============================================================================
+   Screen Flicker Effect
+   Subtle brightness variation to simulate unstable CRT power
+   ============================================================================ */
+
+.dos-terminal-crt__flicker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0);
+  animation: crt-flicker 0.15s infinite;
+  pointer-events: none;
+  will-change: background;
+}
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .dos-terminal-crt__flicker {
+    animation: none;
+  }
+}
+
+@keyframes crt-flicker {
+  0% {
+    background: rgba(255, 255, 255, 0);
+  }
+  5% {
+    background: rgba(255, 255, 255, calc(var(--crt-flicker-intensity, 0.02) * 0.5));
+  }
+  10% {
+    background: rgba(255, 255, 255, 0);
+  }
+  15% {
+    background: rgba(255, 255, 255, var(--crt-flicker-intensity, 0.02));
+  }
+  20% {
+    background: rgba(255, 255, 255, 0);
+  }
+  55% {
+    background: rgba(255, 255, 255, calc(var(--crt-flicker-intensity, 0.02) * 0.3));
+  }
+  60% {
+    background: rgba(255, 255, 255, 0);
+  }
+  100% {
+    background: rgba(255, 255, 255, 0);
+  }
+}
+
+/* ============================================================================
+   CRT Curvature / Vignette Effect
+   Darkens edges to simulate curved CRT screen
+   ============================================================================ */
+
+.dos-terminal-crt__vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, calc(var(--crt-curvature-amount, 0.1) * 3)) 100%
+  );
+  pointer-events: none;
+}
+
+/* ============================================================================
+   Glow Effect Implementation
+   Uses :has() selector to apply text-shadow to terminal when glow is active.
+   The CRT plugin renders inside .dos-terminal, so we can use :has() to detect it.
+   ============================================================================ */
+
+/* Apply glow to terminal when it contains the CRT glow class */
+.dos-terminal:has(.dos-terminal-crt--glow) .dos-terminal__line,
+.dos-terminal:has(.dos-terminal-crt--glow) .dos-terminal__prompt,
+.dos-terminal:has(.dos-terminal-crt--glow) .dos-terminal__input {
+  text-shadow:
+    0 0 1px var(--crt-glow-color, currentColor),
+    0 0 3px var(--crt-glow-color, currentColor),
+    0 0 6px var(--crt-glow-color, currentColor);
+}
+
+/* Cursor also gets glow */
+.dos-terminal:has(.dos-terminal-crt--glow) .dos-terminal__cursor {
+  box-shadow:
+    0 0 2px var(--crt-glow-color, currentColor),
+    0 0 4px var(--crt-glow-color, currentColor);
+}
+
+/* ============================================================================
+   Manual glow classes (for users who want to apply glow without the plugin)
+   ============================================================================ */
+
+/* Terminal with phosphor glow */
+.dos-terminal--crt-glow .dos-terminal__line,
+.dos-terminal--crt-glow .dos-terminal__prompt,
+.dos-terminal--crt-glow .dos-terminal__input {
+  text-shadow:
+    0 0 1px currentColor,
+    0 0 3px currentColor,
+    0 0 6px currentColor;
+}
+
+/* Stronger glow intensity variant */
+.dos-terminal--crt-glow-strong .dos-terminal__line,
+.dos-terminal--crt-glow-strong .dos-terminal__prompt,
+.dos-terminal--crt-glow-strong .dos-terminal__input {
+  text-shadow:
+    0 0 2px currentColor,
+    0 0 5px currentColor,
+    0 0 10px currentColor,
+    0 0 15px currentColor;
+}
+
+/* ============================================================================
+   Phosphor color presets
+   ============================================================================ */
+
+/* Green phosphor (P1/P39 - classic green CRT) */
+.dos-terminal--phosphor-green,
+.dos-terminal.phosphor-green {
+  text-shadow:
+    0 0 2px #33ff33,
+    0 0 4px #33ff33,
+    0 0 8px rgba(51, 255, 51, 0.5);
+}
+
+/* Amber phosphor (P3 - warm orange) */
+.dos-terminal--phosphor-amber,
+.dos-terminal.phosphor-amber {
+  text-shadow:
+    0 0 2px #ffb000,
+    0 0 4px #ffb000,
+    0 0 8px rgba(255, 176, 0, 0.5);
+}
+
+/* White phosphor (P4 - white CRT) */
+.dos-terminal--phosphor-white,
+.dos-terminal.phosphor-white {
+  text-shadow:
+    0 0 2px #ffffff,
+    0 0 4px #ffffff,
+    0 0 8px rgba(255, 255, 255, 0.4);
+}

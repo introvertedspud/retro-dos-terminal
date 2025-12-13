@@ -1,0 +1,91 @@
+{
+  "name": "react-dos-terminal",
+  "version": "0.1.0",
+  "description": "DOS-style terminal emulator for React. Because not everything needs to be Unix.",
+  "homepage": "https://github.com/introvertedspud/react-dos-terminal#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/introvertedspud/react-dos-terminal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/introvertedspud/react-dos-terminal/issues"
+  },
+  "keywords": [
+    "react",
+    "terminal",
+    "dos",
+    "command-prompt",
+    "retro",
+    "console",
+    "cli"
+  ],
+  "author": "Shaun Bonk",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./plugins/commands": {
+      "import": "./dist/plugins/commands/index.mjs",
+      "types": "./dist/plugins/commands/index.d.mts"
+    },
+    "./plugins/filesystem": {
+      "import": "./dist/plugins/filesystem/index.mjs",
+      "types": "./dist/plugins/filesystem/index.d.mts"
+    },
+    "./plugins/doskey": {
+      "import": "./dist/plugins/doskey/index.mjs",
+      "types": "./dist/plugins/doskey/index.d.mts"
+    },
+    "./plugins/programs": {
+      "import": "./dist/plugins/programs/index.mjs",
+      "types": "./dist/plugins/programs/index.d.mts"
+    },
+    "./plugins/effects": {
+      "import": "./dist/plugins/effects/index.mjs",
+      "types": "./dist/plugins/effects/index.d.mts"
+    },
+    "./presets/dos": {
+      "import": "./dist/presets/dos.mjs",
+      "types": "./dist/presets/dos.d.mts"
+    },
+    "./boot": {
+      "import": "./dist/boot/index.mjs",
+      "types": "./dist/boot/index.d.mts"
+    },
+    "./styles.css": "./dist/index.css",
+    "./plugins/effects/styles.css": "./dist/plugins/effects/index.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsdown && npm run postbuild",
+    "postbuild": "cp dist/*.css dist/index.css 2>/dev/null || true",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tsdown": "^0.17.3",
+    "typescript": "^5.0.0"
+  }
+}
