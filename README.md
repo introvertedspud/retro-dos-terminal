@@ -1,4 +1,4 @@
-# react-dos-terminal
+# retro-dos-terminal
 
 DOS-style terminal emulator for React. Because not everything needs to be Unix.
 
@@ -16,16 +16,16 @@ DOS-style terminal emulator for React. Because not everything needs to be Unix.
 ## Installation
 
 ```bash
-npm install react-dos-terminal
+npm install retro-dos-terminal
 ```
 
 ## Quick Start
 
 ```tsx
-import { Terminal } from 'react-dos-terminal'
-import { commands } from 'react-dos-terminal/plugins/commands'
-import { filesystem } from 'react-dos-terminal/plugins/filesystem'
-import 'react-dos-terminal/styles.css'
+import { Terminal } from 'retro-dos-terminal'
+import { commands } from 'retro-dos-terminal/plugins/commands'
+import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+import 'retro-dos-terminal/styles.css'
 
 const files = {
   'C:\\': {
@@ -83,7 +83,7 @@ Three built-in themes:
 Provides built-in DOS commands:
 
 ```tsx
-import { commands } from 'react-dos-terminal/plugins/commands'
+import { commands } from 'retro-dos-terminal/plugins/commands'
 
 <Terminal plugins={[commands()]} />
 ```
@@ -95,7 +95,7 @@ Built-in commands: `CLS`, `DIR`, `CD`, `TYPE`, `ECHO`, `VER`, `HELP`, `EXIT`
 Virtual filesystem for DIR, CD, TYPE:
 
 ```tsx
-import { filesystem } from 'react-dos-terminal/plugins/filesystem'
+import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
 
 const files = {
   'C:\\': {
@@ -115,7 +115,7 @@ const files = {
 Command history with arrow keys:
 
 ```tsx
-import { doskey } from 'react-dos-terminal/plugins/doskey'
+import { doskey } from 'retro-dos-terminal/plugins/doskey'
 
 <Terminal plugins={[doskey({ maxHistory: 50 })]} />
 ```
@@ -125,8 +125,8 @@ import { doskey } from 'react-dos-terminal/plugins/doskey'
 Retro CRT monitor effects:
 
 ```tsx
-import { crt } from 'react-dos-terminal/plugins/effects'
-import 'react-dos-terminal/plugins/effects/styles.css'
+import { crt } from 'retro-dos-terminal/plugins/effects'
+import 'retro-dos-terminal/plugins/effects/styles.css'
 
 <Terminal plugins={[crt({
   scanlines: true,
@@ -142,7 +142,7 @@ import 'react-dos-terminal/plugins/effects/styles.css'
 Run interactive programs:
 
 ```tsx
-import { programs, type TerminalProgram } from 'react-dos-terminal/plugins/programs'
+import { programs, type TerminalProgram } from 'retro-dos-terminal/plugins/programs'
 
 const myProgram: TerminalProgram = {
   name: 'hello',
@@ -161,7 +161,7 @@ const myProgram: TerminalProgram = {
 Optional retro BIOS POST screen:
 
 ```tsx
-import { BIOSBoot } from 'react-dos-terminal/boot'
+import { BIOSBoot } from 'retro-dos-terminal/boot'
 
 <BIOSBoot
   preset="award"  // 'award', 'ami', or 'phoenix'
@@ -189,7 +189,7 @@ Control the terminal programmatically:
 
 ```tsx
 import { useRef } from 'react'
-import { Terminal, type TerminalHandle } from 'react-dos-terminal'
+import { Terminal, type TerminalHandle } from 'retro-dos-terminal'
 
 function App() {
   const terminalRef = useRef<TerminalHandle>(null)
@@ -219,7 +219,7 @@ Available methods:
 For a quick DOS-like setup with all plugins:
 
 ```tsx
-import { DOSTerminal } from 'react-dos-terminal/presets/dos'
+import { DOSTerminal } from 'retro-dos-terminal/presets/dos'
 
 <DOSTerminal
   filesystem={files}
@@ -242,7 +242,7 @@ import type {
   TerminalProgram,
   CommandHandler,
   CommandResult,
-} from 'react-dos-terminal'
+} from 'retro-dos-terminal'
 ```
 
 ## Browser Support
