@@ -167,7 +167,8 @@
   }
 }
 
-/* Focus styles - show cursor only when focused */
-.dos-terminal__input:not(:focus) + .dos-terminal__cursor {
+/* Focus styles - dim and stop blinking when unfocused */
+.dos-terminal__input:not(:focus) ~ .dos-terminal__cursor {
   opacity: 0.4;
+  animation: none;
 }

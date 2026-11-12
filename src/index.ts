@@ -14,6 +14,14 @@ export type {
   CommandHandler,
   CommandResult,
   CursorStyle,
+  PartialTheme,
+  TerminalColors,
+  TerminalCursor,
+  TerminalFont,
+  TerminalEffects,
+  TerminalProgram,
+  FileNode,
+  FileSystem,
 } from './core/types'
 
 // Core component
