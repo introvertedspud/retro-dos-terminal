@@ -1,6 +1,6 @@
 {
   "name": "retro-dos-terminal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DOS-style terminal emulator for React. Because not everything needs to be Unix.",
   "homepage": "https://github.com/introvertedspud/retro-dos-terminal#readme",
   "repository": {
@@ -70,6 +70,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
