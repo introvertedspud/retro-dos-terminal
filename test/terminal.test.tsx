@@ -1,9 +1,14 @@
-import { act } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import type { TerminalPlugin } from '../src/core/types'
+import userEvent from '@testing-library/user-event'
+import type { TerminalContext, TerminalPlugin } from '../src/core/types'
 import { echo } from '../src/plugins/commands'
 import { filesystem } from '../src/plugins/filesystem'
 import { crt } from '../src/plugins/effects'
+import { cd } from '../src/plugins/commands'
+import { doskey } from '../src/plugins/doskey'
+import { Terminal } from '../src/core/terminal'
 import { files, renderTerminal } from './helpers'
 
 describe('Terminal', () => {
@@ -71,7 +76,9 @@ describe('Terminal', () => {
     it('does not warn about changed plugins when none are passed', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const t = renderTerminal()
-      t.rerender(<div />)
+      // Re-render the same Terminal; the default plugins array must stay stable
+      t.rerender(<Terminal className="changed" />)
+      expect(t.container.querySelector('.dos-terminal.changed')).not.toBeNull()
       expect(warn).not.toHaveBeenCalled()
       warn.mockRestore()
     })
@@ -81,6 +88,30 @@ describe('Terminal', () => {
       const reader: TerminalPlugin = { name: 'reader', setup: (ctx) => { seen = ctx.get('filesystem') } }
       renderTerminal({ plugins: [filesystem({ files }), reader] })
       expect(seen).toBeDefined()
+    })
+
+    it('gives setup a context that stays current after later changes', async () => {
+      let saved: TerminalContext | undefined
+      const keeper: TerminalPlugin = {
+        name: 'keeper',
+        setup: (ctx) => { saved = ctx },
+        commands: { where: () => ({ output: [`saved cwd: ${saved!.cwd}`] }) },
+      }
+      const t = renderTerminal({ plugins: [filesystem({ files }), cd(), keeper] })
+      await t.run('cd games')
+      await t.run('where')
+      expect(t.lastLine()).toBe('saved cwd: C:\\GAMES')
+    })
+
+    it('works under StrictMode double-invoked effects', async () => {
+      const user = userEvent.setup()
+      const plugins = [filesystem({ files }), doskey(), cd(), echo()]
+      const { container } = render(<StrictMode><Terminal plugins={plugins} /></StrictMode>)
+      const input = container.querySelector('input')!
+      await user.click(input)
+      await user.keyboard('cd games{Enter}echo hi{Enter}{ArrowUp}')
+      expect(container.querySelector('.dos-terminal__prompt')?.textContent).toBe('C:\\GAMES>')
+      expect(input.value).toBe('echo hi')
     })
 
     it('runs before/after hooks and lets beforeCommand handle a command', async () => {

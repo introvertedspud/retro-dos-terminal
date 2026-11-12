@@ -391,6 +391,20 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       ]
     )
 
+    // setup() runs once, but plugins often keep its ctx for later (e.g. in
+    // closures). Hand them a view that always reads the latest render's ctx.
+    const ctxRef = useRef(ctx)
+    useLayoutEffect(() => {
+      ctxRef.current = ctx
+    }, [ctx])
+    const liveCtx = useMemo(
+      () =>
+        new Proxy({} as TerminalContext, {
+          get: (_target, key) => ctxRef.current[key as keyof TerminalContext],
+        }),
+      []
+    )
+
     // Track initial plugins reference for change detection
     const initialPluginsRef = useRef(plugins)
 
@@ -413,7 +427,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       // Run setup for each plugin
       for (const plugin of plugins) {
         if (plugin.setup) {
-          const result = plugin.setup(ctx)
+          const result = plugin.setup(liveCtx)
           // Handle async setup
           if (result instanceof Promise) {
             result.catch((err) =>
