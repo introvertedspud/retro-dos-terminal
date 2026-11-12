@@ -111,7 +111,8 @@ export function dir(dirOptions?: DirOptions): TerminalPlugin {
           ? formatWide(targetPath, nodes)
           : formatStandard(targetPath, nodes)
 
-        if (options.pause && output.length > pageSize) {
+        // Only page when something other than trailing blank lines spills over
+        if (options.pause && output.slice(pageSize).some((line) => line.trim() !== '')) {
           return { output: startPager(output, pageSize, targetPath, ctx), handled: true }
         }
 
@@ -141,6 +142,8 @@ function startPager(
     stop: () => {},
     handleKeyDown: (key, keyCtx) => {
       if (MODIFIER_KEYS.has(key)) return true
+      // Let Tab through so keyboard users can still move focus
+      if (key === 'Tab') return false
 
       // The "(continuing ...)" header takes one line of the page
       let chunk = lines.slice(position, position + pageSize - 1)

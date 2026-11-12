@@ -1,3 +1,4 @@
+import { act, fireEvent } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { cd, cls, dir, echo, exit, help, type, ver } from '../src/plugins/commands'
 import { filesystem } from '../src/plugins/filesystem'
@@ -121,6 +122,31 @@ describe('DIR', () => {
 
       await t.run('echo done')
       expect(t.lastLine()).toBe('done')
+
+      // Every file was shown exactly once across all pages
+      for (let i = 0; i < 30; i++) {
+        expect(t.lines().filter((l) => l.startsWith(`FILE${i} `))).toHaveLength(1)
+      }
+    })
+
+    it('lets Tab through while paused', async () => {
+      const t = renderTerminal({ plugins: [filesystem({ files: many }), dir({ pageSize: 10 })] })
+      await t.run('dir /p')
+      const before = t.lines().length
+      // fireEvent returns false when a handler called preventDefault
+      expect(fireEvent.keyDown(t.input(), { key: 'Tab' })).toBe(true)
+      expect(t.lines()).toHaveLength(before)
+      expect(t.prompt()).toBeNull()
+    })
+
+    it('does not pause when only blank lines spill over', async () => {
+      // The root listing is 12 lines ending in a blank one; with 11 per page
+      // only that blank line spills over
+      const t = renderTerminal({ plugins: [filesystem({ files }), dir({ pageSize: 11 })] })
+      await t.run('dir /p')
+      expect(t.lines()).toHaveLength(13)
+      expect(t.lines()).not.toContain('Press any key to continue . . .')
+      expect(t.prompt()).toBe('C:\\>')
     })
 
     it('does not pause when everything fits', async () => {
@@ -171,7 +197,7 @@ describe('HELP', () => {
     const t = withFs(dir(), help())
     await t.run('help dir')
     expect(t.lines()).toContain('DIR [drive:][path] [/P] [/W]')
-    t.ref.current!.clear()
+    act(() => t.ref.current!.clear())
     await t.run('dir /?')
     expect(t.lines()).toContain('DIR [drive:][path] [/P] [/W]')
     expect(t.lines()).not.toContain(' Directory of C:\\')
