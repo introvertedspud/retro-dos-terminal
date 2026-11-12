@@ -9,11 +9,21 @@
  * - /P - Pause after each screenful
  */
 
-import type { FileNode, TerminalPlugin } from '../../core/types'
+import type { FileNode, TerminalContext, TerminalPlugin, TerminalProgram } from '../../core/types'
 import type { FilesystemAPI } from '../filesystem/filesystem'
 
+export interface DirOptions {
+  /** Lines per screen for DIR /P (default: 23, a 25-row screen minus the prompt) */
+  pageSize?: number
+}
+
+const PAUSE_PROMPT = 'Press any key to continue . . .'
+
+/** Keys that shouldn't count as "any key" for the /P pause */
+const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'])
+
 /** Parsed DIR arguments */
-interface DirOptions {
+interface DirArgs {
   path: string | null
   wide: boolean
   pause: boolean
@@ -22,8 +32,8 @@ interface DirOptions {
 /**
  * Parse DIR arguments to extract path and flags
  */
-function parseDirArgs(args: string[]): DirOptions {
-  const options: DirOptions = {
+function parseDirArgs(args: string[]): DirArgs {
+  const options: DirArgs = {
     path: null,
     wide: false,
     pause: false,
@@ -61,7 +71,9 @@ function parseDirArgs(args: string[]): DirOptions {
  * // Type "dir /p" to pause after each screenful
  * ```
  */
-export function dir(): TerminalPlugin {
+export function dir(dirOptions?: DirOptions): TerminalPlugin {
+  const pageSize = Math.max(2, dirOptions?.pageSize ?? 23)
+
   return {
     name: 'dir',
     commands: {
@@ -99,13 +111,52 @@ export function dir(): TerminalPlugin {
           ? formatWide(targetPath, nodes)
           : formatStandard(targetPath, nodes)
 
-        // Note: /P pagination not implemented - requires terminal state management
-        // Outputs everything at once (graceful degradation)
+        if (options.pause && output.length > pageSize) {
+          return { output: startPager(output, pageSize, targetPath, ctx), handled: true }
+        }
 
         return { output, handled: true }
       },
     },
   }
+}
+
+/**
+ * Show the first page and hand keyboard control to a pager that prints the
+ * rest a page at a time, like DOS's "Press any key to continue . . ."
+ * Returns the lines for the first page.
+ */
+function startPager(
+  lines: string[],
+  pageSize: number,
+  targetPath: string,
+  ctx: TerminalContext
+): string[] {
+  let position = pageSize
+
+  const pager: TerminalProgram = {
+    commands: [],
+    isActive: true,
+    start: () => {},
+    stop: () => {},
+    handleKeyDown: (key, keyCtx) => {
+      if (MODIFIER_KEYS.has(key)) return true
+
+      // The "(continuing ...)" header takes one line of the page
+      const chunk = lines.slice(position, position + pageSize - 1)
+      position += pageSize - 1
+      const hasMore = position < lines.length
+
+      keyCtx.print([`(continuing ${targetPath})`, ...chunk, ...(hasMore ? [PAUSE_PROMPT] : [])])
+      if (!hasMore) {
+        keyCtx.setActiveProgram(null)
+      }
+      return true
+    },
+  }
+
+  ctx.setActiveProgram(pager)
+  return [...lines.slice(0, position), PAUSE_PROMPT]
 }
 
 /**
