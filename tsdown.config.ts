@@ -22,6 +22,6 @@ export default defineConfig({
   css: { splitting: true },
   // Disable content hashing for predictable filenames
   hash: false,
-  // The CSS transformer leaves url() untouched, so ship the font next to the CSS
-  copy: [{ from: 'src/fonts/dos-vga.woff', to: 'dist/fonts' }],
+  // The CSS transformer leaves url() untouched, so mirror src/core/fonts next to the CSS
+  copy: [{ from: 'src/core/fonts/dos-vga.woff', to: 'dist/fonts' }],
 })
