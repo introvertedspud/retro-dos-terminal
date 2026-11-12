@@ -147,7 +147,6 @@
 .dos-terminal__cursor--block {
   width: 1ch;
   height: 1em;
-  opacity: 0.8;
   mix-blend-mode: difference;
 }
 
@@ -171,7 +170,7 @@
 
 @keyframes dos-cursor-blink {
   0%, 100% {
-    opacity: 0.8;
+    opacity: 1;
   }
   50% {
     opacity: 0;
