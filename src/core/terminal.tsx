@@ -16,6 +16,7 @@ import {
   useMemo,
   forwardRef,
   useImperativeHandle,
+  type CSSProperties,
   type KeyboardEvent,
 } from 'react'
 import type {
@@ -33,6 +34,9 @@ import './terminal.css'
 // ============================================================================
 // Utilities
 // ============================================================================
+
+/** Shared default so an omitted plugins prop keeps a stable reference */
+const NO_PLUGINS: TerminalPlugin[] = []
 
 /** Generate unique ID for terminal lines */
 let lineIdCounter = 0
@@ -175,7 +179,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       initialCwd = 'C:\\',
       onExit,
       welcomeMessage,
-      plugins = [],
+      plugins = NO_PLUGINS,
       className,
       maxHistoryLines = 1000,
     },
@@ -186,7 +190,10 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       typeof themeOverrides === 'string'
         ? themePresets[themeOverrides]
         : themeOverrides
-    const theme = mergeTheme(DEFAULT_THEME, resolvedThemeOverrides)
+    const theme = useMemo(
+      () => mergeTheme(DEFAULT_THEME, resolvedThemeOverrides),
+      [resolvedThemeOverrides]
+    )
 
     // State
     const [history, setHistory] = useState<TerminalLine[]>(() => {
@@ -201,9 +208,10 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     })
     const [cwd, setCwd] = useState(initialCwd)
     const [input, setInput] = useState('')
-    const [sharedState, setSharedState] = useState<Map<string, unknown>>(
-      () => new Map()
-    )
+    // Shared state lives in a ref so plugins always read the latest value,
+    // even within the same event (e.g. setup order, before/afterCommand)
+    const sharedStateRef = useRef<Map<string, unknown>>(new Map())
+    const [sharedStateVersion, setSharedStateVersion] = useState(0)
     const [activeProgram, setActiveProgram] = useState<TerminalProgram | null>(
       null
     )
@@ -296,13 +304,15 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     // Shared state helpers
     const getSharedState = useCallback(
       <T,>(key: string): T | undefined => {
-        return sharedState.get(key) as T | undefined
+        return sharedStateRef.current.get(key) as T | undefined
       },
-      [sharedState]
+      []
     )
 
     const setSharedStateValue = useCallback((key: string, value: unknown) => {
-      setSharedState((prev) => new Map(prev).set(key, value))
+      sharedStateRef.current.set(key, value)
+      // Re-render so plugin render() output reflects the change
+      setSharedStateVersion((v) => v + 1)
     }, [])
 
     // Memoized context object
@@ -336,6 +346,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
         setActiveProgram,
         input,
         setInput,
+        sharedStateVersion,
       ]
     )
 
@@ -344,7 +355,9 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       const result: Record<string, CommandHandler> = {}
       for (const plugin of plugins) {
         if (plugin.commands) {
-          for (const [cmd, handler] of Object.entries(plugin.commands)) {
+          for (const [name, handler] of Object.entries(plugin.commands)) {
+            // Input is lowercased before lookup, so register lowercase too
+            const cmd = name.toLowerCase()
             if (result[cmd]) {
               console.warn(
                 `[react-dos-terminal] Command "${cmd}" from plugin "${plugin.name}" overrides existing command`
@@ -540,7 +553,19 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     // Handle keydown
     const handleKeyDown = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) => {
-        // Let plugins handle key events first
+        // An active program gets first pick of keys (e.g. arrows for games)
+        if (activeProgram?.handleKeyDown) {
+          try {
+            if (activeProgram.handleKeyDown(e.key, ctx)) {
+              e.preventDefault()
+              return
+            }
+          } catch (err) {
+            console.error('[react-dos-terminal] Program onKeyDown error:', err)
+          }
+        }
+
+        // Then let plugins handle key events
         for (const plugin of plugins) {
           if (plugin.onKeyDown) {
             try {
@@ -560,7 +585,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
           handleSubmit()
         }
       },
-      [handleSubmit, plugins, ctx]
+      [handleSubmit, plugins, ctx, activeProgram]
     )
 
     // CSS custom properties from theme
@@ -580,7 +605,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
           '--terminal-line-height':
             theme.font?.lineHeight ?? DEFAULT_THEME.font!.lineHeight,
           '--terminal-cursor-blink-speed': `${theme.cursor.blinkSpeed ?? 530}ms`,
-        }) as React.CSSProperties,
+        }) as CSSProperties,
       [theme]
     )
 
