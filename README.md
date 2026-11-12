@@ -79,6 +79,7 @@ import { doskey } from 'retro-dos-terminal/plugins/doskey'
 import { cd, cls, dir, echo, help, type, ver } from 'retro-dos-terminal/plugins/commands'
 import 'retro-dos-terminal/styles.css'
 
+// `files` is a FileSystem object like the one in Quick Start
 function App() {
   const plugins = useMemo(
     () => [filesystem({ files }), doskey(), cd(), cls(), dir(), echo(), help(), type(), ver()],

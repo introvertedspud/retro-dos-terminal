@@ -14,12 +14,17 @@ All notable changes to this project are documented here. The format is based on
 - Root-relative paths such as `cd \GAMES`.
 - `ctx.commands` lists the registered command names.
 - Plugins can set CSS custom properties on the terminal root with `cssVariables`.
+- `HELP` adds a `beforeCommand` hook so that `command /?` shows usage for any installed command it knows about.
 - Root exports for `PartialTheme`, `TerminalProgram`, `FileNode`, `FileSystem`, `TerminalColors`, `TerminalCursor`, `TerminalFont` and `TerminalEffects`. The commands entry also exports `DirOptions`, `HelpOptions` and `VerOptions`.
 
 ### Changed
 
 - **Layout:** history and input now scroll inside a new `.dos-terminal__viewport` element, which also has the 8px padding. If you styled scrolling or padding on `.dos-terminal`, move those styles to `.dos-terminal__viewport`.
 - **Programs:** the active program now receives key presses directly from the terminal, before other plugins. The programs plugin no longer defines its own `onKeyDown`.
+- **Program UI:** an active program's `render()` output now sits inside the scrolling viewport, after the input line, so it scrolls with the output.
+- **`TerminalContext`:** `commands` is a new required member. Code that builds its own context object, such as test mocks, needs to add it.
+- The context passed to a plugin's `setup` now always reads current values, so plugins that keep it for later see the latest `cwd`, `input` and `commands`.
+- Built files are now `.js` and `.d.ts` instead of `.mjs` and `.d.mts`. Imports through the package's entry points are unaffected; only deep imports of `dist/` files need updating.
 - `HELP` lists only the commands that are installed.
 - The cursor follows the text caret instead of always sitting at the end of the line. The block cursor is one character wide and inverts the character under it.
 - Plugin command names are matched case-insensitively.
@@ -34,6 +39,7 @@ All notable changes to this project are documented here. The format is based on
 - CRT overlays scrolled out of view once output filled the terminal.
 - The CRT `glowColor` and `glowIntensity` options had no effect.
 - `..` from a top-level folder did not reach the root, which broke commands like `dir ..` and `type ..\FILE.TXT` from `C:\GAMES`.
+- `.` and `..` inside absolute paths (such as `C:\GAMES\..`) were not resolved.
 - Rendering `<Terminal />` without plugins logged a warning on every re-render.
 - The cursor did not dim when the terminal lost focus.
 - DOSKEY dropped the quotes from recalled arguments that contained spaces.
