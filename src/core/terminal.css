@@ -143,16 +143,17 @@
   flex-shrink: 0;
 }
 
-/* Block cursor (classic DOS) */
+/* Block cursor (classic DOS) - inverts the character underneath */
 .dos-terminal__cursor--block {
-  width: 0.6em;
+  width: 1ch;
   height: 1em;
   opacity: 0.8;
+  mix-blend-mode: difference;
 }
 
 /* Underline cursor */
 .dos-terminal__cursor--underline {
-  width: 0.6em;
+  width: 1ch;
   height: 2px;
   align-self: flex-end;
 }

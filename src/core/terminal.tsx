@@ -12,6 +12,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
   forwardRef,
@@ -214,6 +215,8 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     })
     const [cwd, setCwd] = useState(initialCwd)
     const [input, setInput] = useState('')
+    // Caret index within input, so the drawn cursor follows arrow keys/clicks
+    const [caret, setCaret] = useState(0)
     // Shared state lives in a ref so plugins always read the latest value,
     // even within the same event (e.g. setup order, before/afterCommand)
     const sharedStateRef = useRef<Map<string, unknown>>(new Map())
@@ -226,6 +229,14 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     const viewportRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const pluginCleanupRef = useRef<Array<() => void>>([])
+
+    const syncCaret = useCallback(() => {
+      const el = inputRef.current
+      if (el) setCaret(el.selectionStart ?? el.value.length)
+    }, [])
+
+    // Programmatic input changes (e.g. DOSKEY recall) move the caret too
+    useLayoutEffect(syncCaret, [input, syncCaret])
 
     // Scroll to bottom when history changes
     useEffect(() => {
@@ -661,6 +672,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
                 className="dos-terminal__input"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onSelect={syncCaret}
                 onKeyDown={handleKeyDown}
                 autoFocus
                 spellCheck={false}
@@ -668,9 +680,9 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
                 autoCapitalize="off"
                 aria-label={`Command input. Current directory: ${cwd}`}
               />
-              {/* Mirror text to position cursor */}
+              {/* Mirror text before the caret to position the cursor */}
               <span className="dos-terminal__input-mirror" aria-hidden="true">
-                {input}
+                {input.slice(0, caret)}
               </span>
               <span className={cursorClass} aria-hidden="true" />
             </div>
