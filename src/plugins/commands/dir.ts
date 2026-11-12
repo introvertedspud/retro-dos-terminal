@@ -143,9 +143,13 @@ function startPager(
       if (MODIFIER_KEYS.has(key)) return true
 
       // The "(continuing ...)" header takes one line of the page
-      const chunk = lines.slice(position, position + pageSize - 1)
+      let chunk = lines.slice(position, position + pageSize - 1)
       position += pageSize - 1
-      const hasMore = position < lines.length
+      // Don't pause again just to show trailing blank lines
+      const hasMore = lines.slice(position).some((line) => line.trim() !== '')
+      if (!hasMore) {
+        chunk = chunk.concat(lines.slice(position))
+      }
 
       keyCtx.print([`(continuing ${targetPath})`, ...chunk, ...(hasMore ? [PAUSE_PROMPT] : [])])
       if (!hasMore) {
