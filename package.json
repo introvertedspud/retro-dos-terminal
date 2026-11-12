@@ -25,44 +25,44 @@
   "engines": {
     "node": ">=20.19.0"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "sideEffects": [
     "**/*.css"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./plugins/commands": {
-      "types": "./dist/plugins/commands/index.d.mts",
-      "import": "./dist/plugins/commands/index.mjs"
+      "types": "./dist/plugins/commands/index.d.ts",
+      "import": "./dist/plugins/commands/index.js"
     },
     "./plugins/filesystem": {
-      "types": "./dist/plugins/filesystem/index.d.mts",
-      "import": "./dist/plugins/filesystem/index.mjs"
+      "types": "./dist/plugins/filesystem/index.d.ts",
+      "import": "./dist/plugins/filesystem/index.js"
     },
     "./plugins/doskey": {
-      "types": "./dist/plugins/doskey/index.d.mts",
-      "import": "./dist/plugins/doskey/index.mjs"
+      "types": "./dist/plugins/doskey/index.d.ts",
+      "import": "./dist/plugins/doskey/index.js"
     },
     "./plugins/programs": {
-      "types": "./dist/plugins/programs/index.d.mts",
-      "import": "./dist/plugins/programs/index.mjs"
+      "types": "./dist/plugins/programs/index.d.ts",
+      "import": "./dist/plugins/programs/index.js"
     },
     "./plugins/effects": {
-      "types": "./dist/plugins/effects/index.d.mts",
-      "import": "./dist/plugins/effects/index.mjs"
+      "types": "./dist/plugins/effects/index.d.ts",
+      "import": "./dist/plugins/effects/index.js"
     },
     "./presets/dos": {
-      "types": "./dist/presets/dos.d.mts",
-      "import": "./dist/presets/dos.mjs"
+      "types": "./dist/presets/dos.d.ts",
+      "import": "./dist/presets/dos.js"
     },
     "./boot": {
-      "types": "./dist/boot/index.d.mts",
-      "import": "./dist/boot/index.mjs"
+      "types": "./dist/boot/index.d.ts",
+      "import": "./dist/boot/index.js"
     },
     "./styles.css": "./dist/terminal.css",
     "./plugins/effects/styles.css": "./dist/plugins/effects/index.css"
@@ -80,7 +80,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.js",
+    "check:exports": "node scripts/check-exports.mjs"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
