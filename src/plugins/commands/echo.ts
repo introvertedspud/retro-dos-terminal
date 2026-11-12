@@ -12,8 +12,8 @@ import type { TerminalPlugin } from '../../core/types'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { echo } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { echo } from 'retro-dos-terminal/plugins/commands'
  *
  * <Terminal plugins={[echo()]} />
  * // Type "echo Hello World" to print "Hello World"

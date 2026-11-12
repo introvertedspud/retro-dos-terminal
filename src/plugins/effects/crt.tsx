@@ -9,7 +9,7 @@
  *
  * @example
  * ```tsx
- * import { crt } from 'react-dos-terminal/plugins/effects'
+ * import { crt } from 'retro-dos-terminal/plugins/effects'
  *
  * // Enable all effects
  * <Terminal plugins={[crt()]} />

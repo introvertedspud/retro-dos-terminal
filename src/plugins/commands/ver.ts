@@ -17,8 +17,8 @@ export interface VerOptions {
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { ver } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { ver } from 'retro-dos-terminal/plugins/commands'
  *
  * // Default MS-DOS 6.22 version
  * <Terminal plugins={[ver()]} />

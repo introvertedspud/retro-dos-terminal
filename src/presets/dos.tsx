@@ -51,7 +51,7 @@ export interface DOSTerminalProps {
  *
  * @example Basic usage
  * ```tsx
- * import { DOSTerminal } from 'react-dos-terminal/presets/dos'
+ * import { DOSTerminal } from 'retro-dos-terminal/presets/dos'
  *
  * const files = {
  *   'C:\\': [

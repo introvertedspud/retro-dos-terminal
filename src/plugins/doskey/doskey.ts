@@ -28,8 +28,8 @@ const SAVED_INPUT_KEY = 'doskey:savedInput'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { doskey } from 'react-dos-terminal/plugins/doskey'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { doskey } from 'retro-dos-terminal/plugins/doskey'
  *
  * <Terminal plugins={[doskey()]} />
  * // Type commands, then use Up/Down arrows to recall them

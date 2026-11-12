@@ -12,8 +12,8 @@ import type { TerminalPlugin } from '../../core/types'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { help } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { help } from 'retro-dos-terminal/plugins/commands'
  *
  * <Terminal plugins={[help()]} />
  * // Type "help" to see available commands

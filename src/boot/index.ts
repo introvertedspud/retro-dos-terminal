@@ -5,7 +5,7 @@
  *
  * @example
  * ```tsx
- * import { BIOSBoot } from 'react-dos-terminal/boot'
+ * import { BIOSBoot } from 'retro-dos-terminal/boot'
  *
  * <BIOSBoot preset="award" onComplete={() => console.log('Ready!')}>
  *   <Terminal plugins={[filesystem]} />

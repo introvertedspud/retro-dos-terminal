@@ -58,8 +58,8 @@ function matchesProgram(filename: string, commands: string[]): boolean {
  *
  * @example
  * ```tsx
- * import { programs, defineProgram } from 'react-dos-terminal/plugins/programs'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
+ * import { programs, defineProgram } from 'retro-dos-terminal/plugins/programs'
+ * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
  *
  * const helloProgram = defineProgram({
  *   commands: ['hello', 'hello.exe'],

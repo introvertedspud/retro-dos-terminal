@@ -99,8 +99,8 @@ function resolvePath(from: string, to: string): string {
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
  *
  * const files = {
  *   'C:\\': [

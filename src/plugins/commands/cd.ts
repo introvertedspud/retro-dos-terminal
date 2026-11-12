@@ -14,9 +14,9 @@ import type { FilesystemAPI } from '../filesystem/filesystem'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
- * import { cd } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+ * import { cd } from 'retro-dos-terminal/plugins/commands'
  *
  * <Terminal plugins={[filesystem({ files }), cd()]} />
  * // Type "cd" or "chdir" to see current directory

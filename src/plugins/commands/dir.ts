@@ -50,9 +50,9 @@ function parseDirArgs(args: string[]): DirOptions {
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
- * import { dir } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+ * import { dir } from 'retro-dos-terminal/plugins/commands'
  *
  * <Terminal plugins={[filesystem({ files }), dir()]} />
  * // Type "dir" to list current directory

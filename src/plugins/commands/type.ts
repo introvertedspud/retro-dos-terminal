@@ -13,9 +13,9 @@ import type { FilesystemAPI } from '../filesystem/filesystem'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
- * import { type } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+ * import { type } from 'retro-dos-terminal/plugins/commands'
  *
  * <Terminal plugins={[filesystem({ files }), type()]} />
  * // Type "type README.TXT" to display file contents
