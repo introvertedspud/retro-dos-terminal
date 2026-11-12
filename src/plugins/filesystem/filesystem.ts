@@ -79,12 +79,9 @@ function resolvePath(from: string, to: string): string {
       // Current directory - do nothing
       continue
     } else if (part === '..') {
-      // Parent directory - go up one level
+      // Parent directory - go up one level, stopping at the root (C:\)
       const lastSlash = result.lastIndexOf('\\')
-      if (lastSlash > 2) {
-        // Don't go above root (C:\)
-        result = result.slice(0, lastSlash)
-      }
+      result = lastSlash > 2 ? result.slice(0, lastSlash) : result.slice(0, 3)
     } else {
       // Regular directory/file name - append
       result = result.endsWith('\\') ? result + part : result + '\\' + part
