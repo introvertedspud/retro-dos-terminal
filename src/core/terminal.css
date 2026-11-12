@@ -8,7 +8,7 @@
 /* DOS VGA Font - bundled for authentic look */
 @font-face {
   font-family: "DOS VGA";
-  src: url("../fonts/dos-vga.woff") format("woff");
+  src: url("./fonts/dos-vga.woff") format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;

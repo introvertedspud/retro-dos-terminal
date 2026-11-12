@@ -12,14 +12,16 @@ export default defineConfig({
     'boot/index': 'src/boot/index.ts',
   },
   format: ['esm'],
+  platform: 'browser',
+  target: 'es2020',
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-dom'],
+  deps: { neverBundle: ['react', 'react-dom'] },
+  // Keep the core and effects stylesheets separate (exposed via package exports)
+  css: { splitting: true },
   // Disable content hashing for predictable filenames
   hash: false,
-  // Handle font files as assets (copies to dist/assets/)
-  loader: {
-    '.woff': 'asset',
-  },
+  // The CSS transformer leaves url() untouched, so ship the font next to the CSS
+  copy: [{ from: 'src/fonts/dos-vga.woff', to: 'dist/fonts' }],
 })
