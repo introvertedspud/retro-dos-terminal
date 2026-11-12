@@ -20,7 +20,7 @@
  * ```
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
 import { getBIOSPreset, type BIOSPresetName, type BIOSConfig } from './presets'
 
 export interface BIOSBootProps {
@@ -148,6 +148,9 @@ export function BIOSBoot({
 
   // Track if boot sequence has been initialized
   const bootInitialized = useRef(false)
+  // Guards against completing twice (skip via click/key/window listener, or timers)
+  const finishedRef = useRef(false)
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Auto-focus container on mount so keyboard skip works
@@ -169,12 +172,14 @@ export function BIOSBoot({
 
   // Handle skip
   const handleSkip = useCallback(() => {
-    if (!skippable || bootComplete) return
+    if (!skippable || finishedRef.current) return
+    finishedRef.current = true
+    timeoutsRef.current.forEach(t => clearTimeout(t))
     setBootComplete(true)
     setStage('complete')
     onSkip?.()
     onComplete?.()
-  }, [skippable, bootComplete, onSkip, onComplete])
+  }, [skippable, onSkip, onComplete])
 
   // Keyboard listener for skip
   useEffect(() => {
@@ -216,7 +221,8 @@ export function BIOSBoot({
     }
 
     let cancelled = false
-    const timeouts: NodeJS.Timeout[] = []
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+    timeoutsRef.current = timeouts
 
     const schedule = (fn: () => void, delay: number) => {
       const timeout = setTimeout(() => {
@@ -323,6 +329,8 @@ export function BIOSBoot({
 
     // Complete
     schedule(() => {
+      if (finishedRef.current) return
+      finishedRef.current = true
       addLine('')
       setStage('complete')
       setBootComplete(true)
@@ -345,7 +353,7 @@ export function BIOSBoot({
   }
 
   // Container styles based on fullscreen prop
-  const containerStyle: React.CSSProperties = fullscreen
+  const containerStyle: CSSProperties = fullscreen
     ? {
         position: 'fixed',
         inset: 0,
