@@ -148,6 +148,8 @@ export interface TerminalContext {
   input: string
   /** Set input value */
   setInput: (value: string) => void
+  /** Names of all registered commands (lowercase, sorted) */
+  commands: string[]
 }
 
 /** Plugin interface */
@@ -183,6 +185,9 @@ export interface TerminalPlugin {
 
   /** Render additional UI (for effects, overlays, etc.) */
   render?: (ctx: TerminalContext) => ReactNode
+
+  /** CSS custom properties applied to the terminal root (e.g. { '--crt-glow-color': '#0f0' }) */
+  cssVariables?: Record<string, string>
 }
 
 // ============================================================================

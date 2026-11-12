@@ -5,7 +5,7 @@
  * - Scanlines: Horizontal lines that simulate CRT display
  * - Phosphor glow: Soft glow around text
  * - Screen flicker: Subtle brightness variation
- * - CRT curvature: Barrel distortion effect (coming soon)
+ * - CRT curvature: Darkened edges (vignette)
  *
  * @example
  * ```tsx
@@ -29,7 +29,6 @@
  * ```
  */
 
-import type { CSSProperties } from 'react'
 import type { TerminalPlugin, TerminalContext } from '../../core/types'
 import './crt.css'
 
@@ -84,17 +83,17 @@ export function crt(options: CRTOptions = {}): TerminalPlugin {
   return {
     name: 'crt',
 
-    render: (_ctx: TerminalContext) => {
-      // Build CSS variables for customization (values must be strings)
-      const cssVars: CSSProperties & Record<string, string> = {
-        '--crt-scanline-opacity': String(opts.scanlineOpacity),
-        '--crt-scanline-spacing': `${opts.scanlineSpacing}px`,
-        '--crt-glow-intensity': String(opts.glowIntensity),
-        '--crt-glow-color': opts.glowColor || 'currentColor',
-        '--crt-flicker-intensity': String(opts.flickerIntensity),
-        '--crt-curvature-amount': String(opts.curvatureAmount),
-      }
+    // Set on the terminal root so both the overlay and the glowing text see them
+    cssVariables: {
+      '--crt-scanline-opacity': String(opts.scanlineOpacity),
+      '--crt-scanline-spacing': `${opts.scanlineSpacing}px`,
+      '--crt-glow-intensity': String(opts.glowIntensity),
+      '--crt-glow-color': opts.glowColor || 'currentColor',
+      '--crt-flicker-intensity': String(opts.flickerIntensity),
+      '--crt-curvature-amount': String(opts.curvatureAmount),
+    },
 
+    render: (_ctx: TerminalContext) => {
       // Build class list
       const classes = ['dos-terminal-crt']
       if (opts.scanlines) classes.push('dos-terminal-crt--scanlines')
@@ -103,7 +102,7 @@ export function crt(options: CRTOptions = {}): TerminalPlugin {
       if (opts.curvature) classes.push('dos-terminal-crt--curvature')
 
       return (
-        <div className={classes.join(' ')} style={cssVars} aria-hidden="true">
+        <div className={classes.join(' ')} aria-hidden="true">
           {/* Scanlines overlay */}
           {opts.scanlines && <div className="dos-terminal-crt__scanlines" />}
 

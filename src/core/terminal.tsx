@@ -321,41 +321,6 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       setSharedStateVersion((v) => v + 1)
     }, [])
 
-    // Memoized context object
-    const ctx: TerminalContext = useMemo(
-      () => ({
-        cwd,
-        setCwd,
-        print,
-        printError,
-        updateLastLine,
-        clear,
-        exit: onExit ?? (() => {}),
-        get: getSharedState,
-        set: setSharedStateValue,
-        history,
-        setActiveProgram,
-        input,
-        setInput,
-      }),
-      [
-        cwd,
-        setCwd,
-        print,
-        printError,
-        updateLastLine,
-        clear,
-        onExit,
-        getSharedState,
-        setSharedStateValue,
-        history,
-        setActiveProgram,
-        input,
-        setInput,
-        sharedStateVersion,
-      ]
-    )
-
     // Collect and memoize commands from plugins (with collision warning)
     const commands = useMemo(() => {
       const result: Record<string, CommandHandler> = {}
@@ -375,6 +340,45 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       }
       return result
     }, [plugins])
+
+    const commandNames = useMemo(() => Object.keys(commands).sort(), [commands])
+
+    // Memoized context object
+    const ctx: TerminalContext = useMemo(
+      () => ({
+        cwd,
+        setCwd,
+        print,
+        printError,
+        updateLastLine,
+        clear,
+        exit: onExit ?? (() => {}),
+        get: getSharedState,
+        set: setSharedStateValue,
+        history,
+        setActiveProgram,
+        input,
+        setInput,
+        commands: commandNames,
+      }),
+      [
+        cwd,
+        setCwd,
+        print,
+        printError,
+        updateLastLine,
+        clear,
+        onExit,
+        getSharedState,
+        setSharedStateValue,
+        history,
+        setActiveProgram,
+        input,
+        setInput,
+        commandNames,
+        sharedStateVersion,
+      ]
+    )
 
     // Track initial plugins reference for change detection
     const initialPluginsRef = useRef(plugins)
@@ -611,8 +615,9 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
           '--terminal-line-height':
             theme.font?.lineHeight ?? DEFAULT_THEME.font!.lineHeight,
           '--terminal-cursor-blink-speed': `${theme.cursor.blinkSpeed ?? 530}ms`,
+          ...Object.assign({}, ...plugins.map((p) => p.cssVariables)),
         }) as CSSProperties,
-      [theme]
+      [theme, plugins]
     )
 
     // Cursor class
