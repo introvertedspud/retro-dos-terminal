@@ -223,14 +223,14 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     )
 
     // Refs
-    const containerRef = useRef<HTMLDivElement>(null)
+    const viewportRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const pluginCleanupRef = useRef<Array<() => void>>([])
 
     // Scroll to bottom when history changes
     useEffect(() => {
-      if (containerRef.current) {
-        containerRef.current.scrollTop = containerRef.current.scrollHeight
+      if (viewportRef.current) {
+        viewportRef.current.scrollTop = viewportRef.current.scrollHeight
       }
     }, [history])
 
@@ -622,52 +622,57 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
 
     return (
       <div
-        ref={containerRef}
         className={`dos-terminal ${className ?? ''}`}
         style={cssVars}
         onClick={handleContainerClick}
         role="application"
         aria-label="DOS Terminal"
       >
-        {/* History */}
-        <div className="dos-terminal__history" role="log" aria-live="polite">
-          {history.map((line) => (
-            <div
-              key={line.id}
-              className={`dos-terminal__line dos-terminal__line--${line.type}`}
-            >
-              {line.text}
-            </div>
-          ))}
-        </div>
-
-        {/* Input line */}
-        <div className="dos-terminal__input-line">
-          {!activeProgram && (
-            <span className="dos-terminal__prompt" aria-hidden="true">
-              {prompt}
-            </span>
-          )}
-          <div className="dos-terminal__input-wrapper">
-            <input
-              ref={inputRef}
-              type="text"
-              className="dos-terminal__input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              spellCheck={false}
-              autoComplete="off"
-              autoCapitalize="off"
-              aria-label={`Command input. Current directory: ${cwd}`}
-            />
-            {/* Mirror text to position cursor */}
-            <span className="dos-terminal__input-mirror" aria-hidden="true">
-              {input}
-            </span>
-            <span className={cursorClass} aria-hidden="true" />
+        {/* Scrolls independently so plugin overlays stay pinned to the frame */}
+        <div ref={viewportRef} className="dos-terminal__viewport">
+          {/* History */}
+          <div className="dos-terminal__history" role="log" aria-live="polite">
+            {history.map((line) => (
+              <div
+                key={line.id}
+                className={`dos-terminal__line dos-terminal__line--${line.type}`}
+              >
+                {line.text}
+              </div>
+            ))}
           </div>
+
+          {/* Input line */}
+          <div className="dos-terminal__input-line">
+            {!activeProgram && (
+              <span className="dos-terminal__prompt" aria-hidden="true">
+                {prompt}
+              </span>
+            )}
+            <div className="dos-terminal__input-wrapper">
+              <input
+                ref={inputRef}
+                type="text"
+                className="dos-terminal__input"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                spellCheck={false}
+                autoComplete="off"
+                autoCapitalize="off"
+                aria-label={`Command input. Current directory: ${cwd}`}
+              />
+              {/* Mirror text to position cursor */}
+              <span className="dos-terminal__input-mirror" aria-hidden="true">
+                {input}
+              </span>
+              <span className={cursorClass} aria-hidden="true" />
+            </div>
+          </div>
+
+          {/* Active program render */}
+          {activeProgram?.render?.()}
         </div>
 
         {/* Plugin renders */}
@@ -676,9 +681,6 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
             <div key={plugin.name}>{plugin.render(ctx)}</div>
           ) : null
         )}
-
-        {/* Active program render */}
-        {activeProgram?.render?.()}
       </div>
     )
   }
