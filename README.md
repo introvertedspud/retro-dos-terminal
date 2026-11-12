@@ -1,5 +1,8 @@
 # retro-dos-terminal
 
+[![CI](https://github.com/introvertedspud/retro-dos-terminal/actions/workflows/ci.yml/badge.svg)](https://github.com/introvertedspud/retro-dos-terminal/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/retro-dos-terminal)](https://www.npmjs.com/package/retro-dos-terminal)
+
 DOS-style terminal emulator for React. Because not everything needs to be Unix.
 
 ## Features
@@ -123,12 +126,21 @@ import { cd, cls, dir, echo, exit, help, type, ver } from 'retro-dos-terminal/pl
 | --- | --- |
 | `CD` / `CHDIR` | Needs filesystem. Supports `..`, `\`, absolute paths, `cd..`, and drive switching (`D:`) |
 | `CLS` | Clears the screen |
-| `DIR` | Needs filesystem. Supports `/W` (wide) |
+| `DIR` | Needs filesystem. Supports `/W` (wide) and `/P` (pause per screen) |
 | `ECHO` | Prints its arguments |
 | `EXIT` | Calls the `onExit` prop |
-| `HELP` | Lists built-in commands |
+| `HELP` | Lists installed commands. `HELP DIR` or `DIR /?` shows usage |
 | `TYPE` | Needs filesystem. Prints a file's `content` |
 | `VER` | Prints the version string |
+
+Options: `dir({ pageSize: 23 })` sets lines per screen for `/P`, and `help({ descriptions, usage })` documents your own commands:
+
+```tsx
+help({
+  descriptions: { date: 'Displays the date.' },
+  usage: { date: ['Displays the date.', '', 'DATE'] },
+})
+```
 
 ### Filesystem
 
@@ -174,6 +186,8 @@ import 'retro-dos-terminal/plugins/effects/styles.css'
   scanlines: true,
   scanlineOpacity: 0.1,
   glow: true,
+  glowIntensity: 0.4,
+  glowColor: '#33ff33', // defaults to the text color
   flicker: false,
   curvature: true, // edge vignette
 })]} />
@@ -223,7 +237,15 @@ const date: TerminalPlugin = {
 }
 ```
 
-Plugins can also define `setup`, `cleanup`, `beforeCommand`, `afterCommand`, `onKeyDown`, and `render` (for overlays). Use `ctx.get` / `ctx.set` to share state between plugins.
+Plugins can also define:
+
+- `setup` / `cleanup` - run on mount and unmount
+- `beforeCommand` / `afterCommand` - middleware around every command
+- `onKeyDown` - intercept keys (return `true` to consume)
+- `render` - draw overlays above the terminal
+- `cssVariables` - CSS custom properties set on the terminal root
+
+Use `ctx.get` / `ctx.set` to share state between plugins, and `ctx.commands` to see what's installed.
 
 ## BIOS Boot Screen
 
@@ -315,6 +337,15 @@ import type {
   FileNode,
   FileSystem,
 } from 'retro-dos-terminal'
+```
+
+## Development
+
+```bash
+npm install
+npm test          # Vitest + Testing Library
+npm run typecheck
+npm run build     # tsdown -> dist/
 ```
 
 ## Browser Support
