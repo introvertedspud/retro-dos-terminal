@@ -28,7 +28,7 @@ describe('BIOSBoot', () => {
     const { container } = render(<BIOSBoot><div /></BIOSBoot>)
     act(() => { vi.advanceTimersByTime(300) })
     const texts = [...container.querySelectorAll('div > div > div')].map((el) => el.textContent)
-    expect(texts).toContain(' ')
+    expect(texts).toContain(' ')
     expect(container.querySelector('style')).toBeNull()
   })
 

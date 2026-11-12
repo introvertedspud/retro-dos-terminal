@@ -397,8 +397,9 @@ export function BIOSBoot({
               whiteSpace: 'pre',
             }}
           >
-            {/* Non-breaking space keeps blank lines from collapsing */}
-            {line.text || '\u00a0'}
+            {/* With white-space: pre, a space keeps blank lines from collapsing
+                (U+00A0 would render as "á" in the CP437-mapped VGA font) */}
+            {line.text || ' '}
           </div>
         ))}
 
