@@ -25,6 +25,9 @@ describe('filesystem plugin', () => {
       ['C:\\GAMES', '\\', 'C:\\'],
       ['C:\\', 'd:\\', 'D:\\'],
       ['C:\\', 'games/', 'C:\\GAMES'],
+      ['C:\\', 'C:\\GAMES\\..', 'C:\\'],
+      ['D:\\', 'c:\\games\\..\\docs', 'C:\\DOCS'],
+      ['C:\\GAMES', 'C:\\.\\DOCS', 'C:\\DOCS'],
     ])('from %s to %s is %s', (from, to, expected) => {
       expect(fs.resolvePath(from, to)).toBe(expected)
     })

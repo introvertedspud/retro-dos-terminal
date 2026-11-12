@@ -60,19 +60,16 @@ function normalizePath(path: string): string {
 function resolvePath(from: string, to: string): string {
   const normalizedTo = normalizePath(to)
 
-  // If `to` is an absolute path (starts with drive letter), return it
-  if (/^[A-Z]:\\/.test(normalizedTo)) {
-    return normalizedTo
-  }
-
-  // Start from the normalized base, or the drive root for "\GAMES"-style paths
-  let result = normalizePath(from)
-  if (normalizedTo.startsWith('\\')) {
+  // Absolute paths (C:\...) start from their drive root, root-relative
+  // paths (\GAMES) from the current drive's root, others from `from`
+  const drive = normalizedTo.match(/^[A-Z]:\\/)?.[0]
+  let result = drive ?? normalizePath(from)
+  if (!drive && normalizedTo.startsWith('\\')) {
     result = result.slice(0, 3)
   }
 
-  // Split the relative path into parts
-  const parts = normalizedTo.split('\\').filter(Boolean)
+  // Walk the remaining parts so "." and ".." work anywhere in the path
+  const parts = normalizedTo.slice(drive?.length ?? 0).split('\\').filter(Boolean)
 
   for (const part of parts) {
     if (part === '.') {
