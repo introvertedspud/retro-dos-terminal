@@ -24,6 +24,14 @@ describe('BIOSBoot', () => {
     expect(onComplete).toHaveBeenCalledOnce()
   })
 
+  it('keeps blank lines visible and does not override the VGA font', () => {
+    const { container } = render(<BIOSBoot><div /></BIOSBoot>)
+    act(() => { vi.advanceTimersByTime(300) })
+    const texts = [...container.querySelectorAll('div > div > div')].map((el) => el.textContent)
+    expect(texts).toContain(' ')
+    expect(container.querySelector('style')).toBeNull()
+  })
+
   it('renders children immediately at instant speed', () => {
     render(<BIOSBoot speed="instant"><div>DOS READY</div></BIOSBoot>)
     expect(screen.getByText('DOS READY')).toBeTruthy()

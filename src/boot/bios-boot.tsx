@@ -397,7 +397,8 @@ export function BIOSBoot({
               whiteSpace: 'pre',
             }}
           >
-            {line.text}
+            {/* Non-breaking space keeps blank lines from collapsing */}
+            {line.text || '\u00a0'}
           </div>
         ))}
 
@@ -431,13 +432,6 @@ export function BIOSBoot({
         </div>
       )}
 
-      {/* Font is loaded by terminal CSS, this is just a fallback */}
-      <style>{`
-        @font-face {
-          font-family: 'DOS VGA';
-          src: local('DOS VGA'), local('Consolas'), local('Courier New');
-        }
-      `}</style>
     </div>
   )
 }
