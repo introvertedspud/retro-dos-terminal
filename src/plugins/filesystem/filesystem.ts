@@ -52,6 +52,7 @@ function normalizePath(path: string): string {
  *
  * Handles:
  * - Absolute paths (C:\...)
+ * - Root-relative paths (\GAMES)
  * - Parent directory (..)
  * - Current directory (.)
  * - Simple relative paths (GAMES, GAMES\SNAKE.EXE)
@@ -64,8 +65,11 @@ function resolvePath(from: string, to: string): string {
     return normalizedTo
   }
 
-  // Start from the normalized base
+  // Start from the normalized base, or the drive root for "\GAMES"-style paths
   let result = normalizePath(from)
+  if (normalizedTo.startsWith('\\')) {
+    result = result.slice(0, 3)
+  }
 
   // Split the relative path into parts
   const parts = normalizedTo.split('\\').filter(Boolean)

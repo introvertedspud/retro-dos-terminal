@@ -76,6 +76,12 @@ export function parseCommandLine(input: string): { cmd: string; args: string[] }
 
   if (current) parts.push(current)
 
+  // DOS accepted "cd..", "cd\" and "dir/w" with no space after the command
+  const glued = parts[0]?.match(/^([^\\/.:]+)(\.\..*|[\\/].*)$/)
+  if (glued) {
+    parts.splice(0, 1, glued[1], glued[2])
+  }
+
   return {
     cmd: parts[0]?.toLowerCase() || '',
     args: parts.slice(1),
