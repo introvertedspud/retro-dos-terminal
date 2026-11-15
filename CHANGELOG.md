@@ -44,6 +44,7 @@ All notable changes to this project are documented here. The format is based on
 - `.` and `..` inside absolute paths (such as `C:\GAMES\..`) were not resolved.
 - Rendering `<Terminal />` without plugins logged a warning on every re-render.
 - The cursor did not dim when the terminal lost focus.
+- Input longer than the terminal is wide scrolled the whole terminal sideways and moved the cursor off the caret. The input line now scrolls on its own.
 - DOSKEY dropped the quotes from recalled arguments that contained spaces.
 - Apostrophes were treated as quotes, so `echo it's` printed `its`. Only double quotes group words now, as in DOS.
 - The README documented APIs that do not exist, some examples did not type-check, and JSDoc examples imported from the wrong package name or used options that do not exist.

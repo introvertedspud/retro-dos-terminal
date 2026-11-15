@@ -99,6 +99,9 @@
   flex: 1;
   display: flex;
   align-items: center;
+  /* Long input scrolls inside the input instead of widening the terminal */
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* Hidden actual input - positioned absolute so mirror can size wrapper */
@@ -123,6 +126,9 @@
   top: 0;
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
+  /* Room for the block cursor when the input scrolls to the end */
+  padding-right: 1ch;
   caret-color: transparent; /* Hide native caret, we draw our own */
 }
 

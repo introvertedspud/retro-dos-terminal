@@ -1,4 +1,4 @@
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
@@ -161,6 +161,17 @@ describe('Terminal', () => {
       await t.user.keyboard('HELLO{ArrowLeft}{ArrowLeft}')
       const mirror = t.container.querySelector('.dos-terminal__input-mirror')!
       expect(mirror.textContent).toBe('HEL')
+    })
+
+    it('moves with the input when long text scrolls it', async () => {
+      const t = renderTerminal()
+      await t.user.click(t.input())
+      await t.user.keyboard('x'.repeat(200))
+      // jsdom has no layout, so stand in for the browser scrolling the input
+      Object.defineProperty(t.input(), 'scrollLeft', { configurable: true, value: 40 })
+      fireEvent.scroll(t.input())
+      const mirror = t.container.querySelector<HTMLElement>('.dos-terminal__input-mirror')!
+      expect(mirror.style.marginLeft).toBe('-40px')
     })
   })
 })
