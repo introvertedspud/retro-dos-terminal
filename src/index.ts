@@ -14,6 +14,14 @@ export type {
   CommandHandler,
   CommandResult,
   CursorStyle,
+  PartialTheme,
+  TerminalColors,
+  TerminalCursor,
+  TerminalFont,
+  TerminalEffects,
+  TerminalProgram,
+  FileNode,
+  FileSystem,
 } from './core/types'
 
 // Core component
@@ -37,4 +45,4 @@ export { BIOSBoot } from './boot'
 export type { BIOSBootProps, BIOSConfig, BIOSPresetName } from './boot'
 export { getBIOSPreset, AWARD_BIOS, AMI_BIOS, PHOENIX_BIOS } from './boot'
 
-export const VERSION = '0.1.0'
+export const VERSION = '0.2.0'

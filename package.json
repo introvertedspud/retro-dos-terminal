@@ -1,6 +1,6 @@
 {
   "name": "retro-dos-terminal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DOS-style terminal emulator for React. Because not everything needs to be Unix.",
   "homepage": "https://github.com/introvertedspud/retro-dos-terminal#readme",
   "repository": {
@@ -25,67 +25,82 @@
   "engines": {
     "node": ">=20.19.0"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.mts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./plugins/commands": {
-      "import": "./dist/plugins/commands/index.mjs",
-      "types": "./dist/plugins/commands/index.d.mts"
+      "types": "./dist/plugins/commands/index.d.ts",
+      "import": "./dist/plugins/commands/index.js"
     },
     "./plugins/filesystem": {
-      "import": "./dist/plugins/filesystem/index.mjs",
-      "types": "./dist/plugins/filesystem/index.d.mts"
+      "types": "./dist/plugins/filesystem/index.d.ts",
+      "import": "./dist/plugins/filesystem/index.js"
     },
     "./plugins/doskey": {
-      "import": "./dist/plugins/doskey/index.mjs",
-      "types": "./dist/plugins/doskey/index.d.mts"
+      "types": "./dist/plugins/doskey/index.d.ts",
+      "import": "./dist/plugins/doskey/index.js"
     },
     "./plugins/programs": {
-      "import": "./dist/plugins/programs/index.mjs",
-      "types": "./dist/plugins/programs/index.d.mts"
+      "types": "./dist/plugins/programs/index.d.ts",
+      "import": "./dist/plugins/programs/index.js"
     },
     "./plugins/effects": {
-      "import": "./dist/plugins/effects/index.mjs",
-      "types": "./dist/plugins/effects/index.d.mts"
+      "types": "./dist/plugins/effects/index.d.ts",
+      "import": "./dist/plugins/effects/index.js"
     },
     "./presets/dos": {
-      "import": "./dist/presets/dos.mjs",
-      "types": "./dist/presets/dos.d.mts"
+      "types": "./dist/presets/dos.d.ts",
+      "import": "./dist/presets/dos.js"
     },
     "./boot": {
-      "import": "./dist/boot/index.mjs",
-      "types": "./dist/boot/index.d.mts"
+      "types": "./dist/boot/index.d.ts",
+      "import": "./dist/boot/index.js"
     },
-    "./styles.css": "./dist/index.css",
+    "./styles.css": "./dist/chunks/terminal.css",
     "./plugins/effects/styles.css": "./dist/plugins/effects/index.css"
   },
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsdown && npm run postbuild",
-    "postbuild": "cp dist/*.css dist/index.css 2>/dev/null || true",
+    "build": "tsdown",
     "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "screenshots": "node scripts/screenshots.mjs",
+    "check:exports": "node scripts/check-exports.mjs"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "tsdown": "^0.17.3",
-    "typescript": "^5.0.0"
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
+    "@tsdown/css": "^0.23.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^31.0.0",
+    "playwright-core": "^1.65.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsdown": "^0.23.7",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
   }
 }

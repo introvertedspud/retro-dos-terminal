@@ -28,8 +28,8 @@ const SAVED_INPUT_KEY = 'doskey:savedInput'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { doskey } from 'react-dos-terminal/plugins/doskey'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { doskey } from 'retro-dos-terminal/plugins/doskey'
  *
  * <Terminal plugins={[doskey()]} />
  * // Type commands, then use Up/Down arrows to recall them
@@ -52,8 +52,9 @@ export function doskey(options?: DoskeyOptions): TerminalPlugin {
     },
 
     afterCommand: (cmd: string, args: string[], ctx: TerminalContext) => {
-      // Build the full command string
-      const fullCommand = args.length > 0 ? `${cmd} ${args.join(' ')}` : cmd
+      // Rebuild the command line, re-quoting args that contained spaces
+      const quoted = args.map((arg) => (arg.includes(' ') ? `"${arg}"` : arg))
+      const fullCommand = [cmd, ...quoted].join(' ')
 
       // Don't add empty commands or duplicates of the last command
       if (!fullCommand.trim()) return

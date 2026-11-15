@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { BIOSBoot } from 'react-dos-terminal/boot'
+ * import { BIOSBoot } from 'retro-dos-terminal/boot'
  *
  * // Using a preset (fullscreen)
  * <BIOSBoot preset="award" onComplete={() => console.log('Ready!')}>
@@ -20,7 +20,7 @@
  * ```
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
 import { getBIOSPreset, type BIOSPresetName, type BIOSConfig } from './presets'
 
 export interface BIOSBootProps {
@@ -148,6 +148,9 @@ export function BIOSBoot({
 
   // Track if boot sequence has been initialized
   const bootInitialized = useRef(false)
+  // Guards against completing twice (skip via click/key/window listener, or timers)
+  const finishedRef = useRef(false)
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Auto-focus container on mount so keyboard skip works
@@ -169,12 +172,14 @@ export function BIOSBoot({
 
   // Handle skip
   const handleSkip = useCallback(() => {
-    if (!skippable || bootComplete) return
+    if (!skippable || finishedRef.current) return
+    finishedRef.current = true
+    timeoutsRef.current.forEach(t => clearTimeout(t))
     setBootComplete(true)
     setStage('complete')
     onSkip?.()
     onComplete?.()
-  }, [skippable, bootComplete, onSkip, onComplete])
+  }, [skippable, onSkip, onComplete])
 
   // Keyboard listener for skip
   useEffect(() => {
@@ -206,7 +211,15 @@ export function BIOSBoot({
 
   // Boot sequence - only run once
   useEffect(() => {
-    if (speed === 'instant' || bootComplete || bootInitialized.current) return
+    if (speed === 'instant') {
+      // Nothing to animate, but callers still rely on onComplete
+      if (!finishedRef.current) {
+        finishedRef.current = true
+        onComplete?.()
+      }
+      return
+    }
+    if (bootComplete || bootInitialized.current) return
 
     // Mark as initialized to prevent re-runs
     bootInitialized.current = true
@@ -216,7 +229,8 @@ export function BIOSBoot({
     }
 
     let cancelled = false
-    const timeouts: NodeJS.Timeout[] = []
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+    timeoutsRef.current = timeouts
 
     const schedule = (fn: () => void, delay: number) => {
       const timeout = setTimeout(() => {
@@ -323,6 +337,8 @@ export function BIOSBoot({
 
     // Complete
     schedule(() => {
+      if (finishedRef.current) return
+      finishedRef.current = true
       addLine('')
       setStage('complete')
       setBootComplete(true)
@@ -345,7 +361,7 @@ export function BIOSBoot({
   }
 
   // Container styles based on fullscreen prop
-  const containerStyle: React.CSSProperties = fullscreen
+  const containerStyle: CSSProperties = fullscreen
     ? {
         position: 'fixed',
         inset: 0,
@@ -389,7 +405,9 @@ export function BIOSBoot({
               whiteSpace: 'pre',
             }}
           >
-            {line.text}
+            {/* With white-space: pre, a space keeps blank lines from collapsing
+                (U+00A0 would render as "á" in the CP437-mapped VGA font) */}
+            {line.text || ' '}
           </div>
         ))}
 
@@ -423,13 +441,6 @@ export function BIOSBoot({
         </div>
       )}
 
-      {/* Font is loaded by terminal CSS, this is just a fallback */}
-      <style>{`
-        @font-face {
-          font-family: 'DOS VGA';
-          src: local('DOS VGA'), local('Consolas'), local('Courier New');
-        }
-      `}</style>
     </div>
   )
 }

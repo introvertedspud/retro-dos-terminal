@@ -12,10 +12,12 @@ import {
   useState,
   useRef,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
   forwardRef,
   useImperativeHandle,
+  type CSSProperties,
   type KeyboardEvent,
 } from 'react'
 import type {
@@ -34,6 +36,12 @@ import './terminal.css'
 // Utilities
 // ============================================================================
 
+/** useLayoutEffect warns during server rendering on React 18, where it can't run anyway */
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
+
+/** Shared default so an omitted plugins prop keeps a stable reference */
+const NO_PLUGINS: TerminalPlugin[] = []
+
 /** Generate unique ID for terminal lines */
 let lineIdCounter = 0
 function generateLineId(): string {
@@ -49,17 +57,13 @@ export function parseCommandLine(input: string): { cmd: string; args: string[] }
   const parts: string[] = []
   let current = ''
   let inQuotes = false
-  let quoteChar = ''
 
   for (let i = 0; i < input.length; i++) {
     const char = input[i]
 
-    if ((char === '"' || char === "'") && !inQuotes) {
-      inQuotes = true
-      quoteChar = char
-    } else if (char === quoteChar && inQuotes) {
-      inQuotes = false
-      quoteChar = ''
+    // Only double quotes group words in DOS; apostrophes are literal (echo it's)
+    if (char === '"') {
+      inQuotes = !inQuotes
     } else if (char === ' ' && !inQuotes) {
       if (current) {
         parts.push(current)
@@ -71,6 +75,12 @@ export function parseCommandLine(input: string): { cmd: string; args: string[] }
   }
 
   if (current) parts.push(current)
+
+  // DOS accepted "cd..", "cd\" and "dir/w" with no space after the command
+  const glued = parts[0]?.match(/^([^\\/.:]+)(\.\..*|[\\/].*)$/)
+  if (glued) {
+    parts.splice(0, 1, glued[1], glued[2])
+  }
 
   return {
     cmd: parts[0]?.toLowerCase() || '',
@@ -175,7 +185,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       initialCwd = 'C:\\',
       onExit,
       welcomeMessage,
-      plugins = [],
+      plugins = NO_PLUGINS,
       className,
       maxHistoryLines = 1000,
     },
@@ -186,7 +196,10 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       typeof themeOverrides === 'string'
         ? themePresets[themeOverrides]
         : themeOverrides
-    const theme = mergeTheme(DEFAULT_THEME, resolvedThemeOverrides)
+    const theme = useMemo(
+      () => mergeTheme(DEFAULT_THEME, resolvedThemeOverrides),
+      [resolvedThemeOverrides]
+    )
 
     // State
     const [history, setHistory] = useState<TerminalLine[]>(() => {
@@ -201,22 +214,37 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     })
     const [cwd, setCwd] = useState(initialCwd)
     const [input, setInput] = useState('')
-    const [sharedState, setSharedState] = useState<Map<string, unknown>>(
-      () => new Map()
-    )
+    // Caret index within input, so the drawn cursor follows arrow keys/clicks
+    const [caret, setCaret] = useState(0)
+    const [inputScroll, setInputScroll] = useState(0)
+    // Shared state lives in a ref so plugins always read the latest value,
+    // even within the same event (e.g. setup order, before/afterCommand)
+    const sharedStateRef = useRef<Map<string, unknown>>(new Map())
+    const [sharedStateVersion, setSharedStateVersion] = useState(0)
     const [activeProgram, setActiveProgram] = useState<TerminalProgram | null>(
       null
     )
 
     // Refs
-    const containerRef = useRef<HTMLDivElement>(null)
+    const viewportRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
     const pluginCleanupRef = useRef<Array<() => void>>([])
 
+    const syncCaret = useCallback(() => {
+      const el = inputRef.current
+      if (el) {
+        setCaret(el.selectionStart ?? el.value.length)
+        setInputScroll(el.scrollLeft)
+      }
+    }, [])
+
+    // Programmatic input changes (e.g. DOSKEY recall) move the caret too
+    useIsomorphicLayoutEffect(syncCaret, [input, syncCaret])
+
     // Scroll to bottom when history changes
     useEffect(() => {
-      if (containerRef.current) {
-        containerRef.current.scrollTop = containerRef.current.scrollHeight
+      if (viewportRef.current) {
+        viewportRef.current.scrollTop = viewportRef.current.scrollHeight
       }
     }, [history])
 
@@ -296,14 +324,38 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     // Shared state helpers
     const getSharedState = useCallback(
       <T,>(key: string): T | undefined => {
-        return sharedState.get(key) as T | undefined
+        return sharedStateRef.current.get(key) as T | undefined
       },
-      [sharedState]
+      []
     )
 
     const setSharedStateValue = useCallback((key: string, value: unknown) => {
-      setSharedState((prev) => new Map(prev).set(key, value))
+      sharedStateRef.current.set(key, value)
+      // Re-render so plugin render() output reflects the change
+      setSharedStateVersion((v) => v + 1)
     }, [])
+
+    // Collect and memoize commands from plugins (with collision warning)
+    const commands = useMemo(() => {
+      const result: Record<string, CommandHandler> = {}
+      for (const plugin of plugins) {
+        if (plugin.commands) {
+          for (const [name, handler] of Object.entries(plugin.commands)) {
+            // Input is lowercased before lookup, so register lowercase too
+            const cmd = name.toLowerCase()
+            if (result[cmd]) {
+              console.warn(
+                `[react-dos-terminal] Command "${cmd}" from plugin "${plugin.name}" overrides existing command`
+              )
+            }
+            result[cmd] = handler
+          }
+        }
+      }
+      return result
+    }, [plugins])
+
+    const commandNames = useMemo(() => Object.keys(commands).sort(), [commands])
 
     // Memoized context object
     const ctx: TerminalContext = useMemo(
@@ -321,6 +373,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
         setActiveProgram,
         input,
         setInput,
+        commands: commandNames,
       }),
       [
         cwd,
@@ -336,26 +389,24 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
         setActiveProgram,
         input,
         setInput,
+        commandNames,
+        sharedStateVersion,
       ]
     )
 
-    // Collect and memoize commands from plugins (with collision warning)
-    const commands = useMemo(() => {
-      const result: Record<string, CommandHandler> = {}
-      for (const plugin of plugins) {
-        if (plugin.commands) {
-          for (const [cmd, handler] of Object.entries(plugin.commands)) {
-            if (result[cmd]) {
-              console.warn(
-                `[react-dos-terminal] Command "${cmd}" from plugin "${plugin.name}" overrides existing command`
-              )
-            }
-            result[cmd] = handler
-          }
-        }
-      }
-      return result
-    }, [plugins])
+    // setup() runs once, but plugins often keep its ctx for later (e.g. in
+    // closures). Hand them a view that always reads the latest render's ctx.
+    const ctxRef = useRef(ctx)
+    useIsomorphicLayoutEffect(() => {
+      ctxRef.current = ctx
+    }, [ctx])
+    const liveCtx = useMemo(
+      () =>
+        new Proxy({} as TerminalContext, {
+          get: (_target, key) => ctxRef.current[key as keyof TerminalContext],
+        }),
+      []
+    )
 
     // Track initial plugins reference for change detection
     const initialPluginsRef = useRef(plugins)
@@ -379,7 +430,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
       // Run setup for each plugin
       for (const plugin of plugins) {
         if (plugin.setup) {
-          const result = plugin.setup(ctx)
+          const result = plugin.setup(liveCtx)
           // Handle async setup
           if (result instanceof Promise) {
             result.catch((err) =>
@@ -540,11 +591,23 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     // Handle keydown
     const handleKeyDown = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) => {
-        // Let plugins handle key events first
+        // An active program gets first pick of keys (e.g. arrows for games)
+        if (activeProgram?.handleKeyDown) {
+          try {
+            if (activeProgram.handleKeyDown(e.key, ctx, e)) {
+              e.preventDefault()
+              return
+            }
+          } catch (err) {
+            console.error('[react-dos-terminal] Program onKeyDown error:', err)
+          }
+        }
+
+        // Then let plugins handle key events
         for (const plugin of plugins) {
           if (plugin.onKeyDown) {
             try {
-              const handled = plugin.onKeyDown(e.key, ctx)
+              const handled = plugin.onKeyDown(e.key, ctx, e)
               if (handled) {
                 e.preventDefault()
                 return
@@ -560,7 +623,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
           handleSubmit()
         }
       },
-      [handleSubmit, plugins, ctx]
+      [handleSubmit, plugins, ctx, activeProgram]
     )
 
     // CSS custom properties from theme
@@ -580,8 +643,9 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
           '--terminal-line-height':
             theme.font?.lineHeight ?? DEFAULT_THEME.font!.lineHeight,
           '--terminal-cursor-blink-speed': `${theme.cursor.blinkSpeed ?? 530}ms`,
-        }) as React.CSSProperties,
-      [theme]
+          ...Object.assign({}, ...plugins.map((p) => p.cssVariables)),
+        }) as CSSProperties,
+      [theme, plugins]
     )
 
     // Cursor class
@@ -591,52 +655,64 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
 
     return (
       <div
-        ref={containerRef}
         className={`dos-terminal ${className ?? ''}`}
         style={cssVars}
         onClick={handleContainerClick}
         role="application"
         aria-label="DOS Terminal"
       >
-        {/* History */}
-        <div className="dos-terminal__history" role="log" aria-live="polite">
-          {history.map((line) => (
-            <div
-              key={line.id}
-              className={`dos-terminal__line dos-terminal__line--${line.type}`}
-            >
-              {line.text}
-            </div>
-          ))}
-        </div>
-
-        {/* Input line */}
-        <div className="dos-terminal__input-line">
-          {!activeProgram && (
-            <span className="dos-terminal__prompt" aria-hidden="true">
-              {prompt}
-            </span>
-          )}
-          <div className="dos-terminal__input-wrapper">
-            <input
-              ref={inputRef}
-              type="text"
-              className="dos-terminal__input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              spellCheck={false}
-              autoComplete="off"
-              autoCapitalize="off"
-              aria-label={`Command input. Current directory: ${cwd}`}
-            />
-            {/* Mirror text to position cursor */}
-            <span className="dos-terminal__input-mirror" aria-hidden="true">
-              {input}
-            </span>
-            <span className={cursorClass} aria-hidden="true" />
+        {/* Scrolls independently so plugin overlays stay pinned to the frame */}
+        <div ref={viewportRef} className="dos-terminal__viewport">
+          {/* History */}
+          <div className="dos-terminal__history" role="log" aria-live="polite">
+            {history.map((line) => (
+              <div
+                key={line.id}
+                className={`dos-terminal__line dos-terminal__line--${line.type}`}
+              >
+                {line.text}
+              </div>
+            ))}
           </div>
+
+          {/* Input line */}
+          <div className="dos-terminal__input-line">
+            {!activeProgram && (
+              <span className="dos-terminal__prompt" aria-hidden="true">
+                {prompt}
+              </span>
+            )}
+            <div className="dos-terminal__input-wrapper">
+              <input
+                ref={inputRef}
+                type="text"
+                className="dos-terminal__input"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onSelect={syncCaret}
+                onScroll={syncCaret}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                spellCheck={false}
+                autoComplete="off"
+                autoCapitalize="off"
+                aria-label={`Command input. Current directory: ${cwd}`}
+              />
+              {/* Mirror text before the caret positions the cursor, shifted by
+                  however far the input has scrolled to keep the caret in view */}
+              <span
+                className="dos-terminal__input-mirror"
+                style={{ marginLeft: -inputScroll }}
+                aria-hidden="true"
+              >
+                {input.slice(0, caret)}
+              </span>
+              <span className={cursorClass} aria-hidden="true" />
+            </div>
+          </div>
+
+          {/* Active program render */}
+          {activeProgram?.render?.()}
         </div>
 
         {/* Plugin renders */}
@@ -645,9 +721,6 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
             <div key={plugin.name}>{plugin.render(ctx)}</div>
           ) : null
         )}
-
-        {/* Active program render */}
-        {activeProgram?.render?.()}
       </div>
     )
   }

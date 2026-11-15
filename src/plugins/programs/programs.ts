@@ -8,6 +8,7 @@
  * The file must exist in the current directory and have `executable: true`.
  */
 
+import type { KeyboardEvent, ReactNode } from 'react'
 import type { TerminalPlugin, TerminalContext, TerminalProgram, CommandResult, FileNode } from '../../core/types'
 import type { FilesystemAPI } from '../filesystem/filesystem'
 
@@ -21,9 +22,9 @@ export interface ProgramDefinition {
   /** Handle text input while active - return handled: true to consume */
   onInput?: (input: string, ctx: TerminalContext) => CommandResult
   /** Handle key events while active - return true to consume */
-  onKeyDown?: (key: string, ctx: TerminalContext) => boolean
+  onKeyDown?: (key: string, ctx: TerminalContext, event?: KeyboardEvent<HTMLInputElement>) => boolean
   /** Render custom UI while active */
-  render?: () => React.ReactNode
+  render?: () => ReactNode
 }
 
 // State keys
@@ -57,8 +58,8 @@ function matchesProgram(filename: string, commands: string[]): boolean {
  *
  * @example
  * ```tsx
- * import { programs, defineProgram } from 'react-dos-terminal/plugins/programs'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
+ * import { programs, defineProgram } from 'retro-dos-terminal/plugins/programs'
+ * import { filesystem, type FileSystem } from 'retro-dos-terminal/plugins/filesystem'
  *
  * const helloProgram = defineProgram({
  *   commands: ['hello', 'hello.exe'],
@@ -74,7 +75,7 @@ function matchesProgram(filename: string, commands: string[]): boolean {
  * })
  *
  * // Filesystem must have a matching executable file
- * const files = {
+ * const files: FileSystem = {
  *   'C:\\': [
  *     { type: 'file', name: 'HELLO.EXE', executable: true }
  *   ]
@@ -97,8 +98,8 @@ export function programs(programDefs: ProgramDefinition[]): TerminalPlugin {
   return {
     name: 'programs',
 
-    beforeCommand: (cmd: string, args: string[], ctx: TerminalContext): CommandResult | void => {
-      // Provide exitProgram helper fresh each time (so it has current ctx reference)
+    setup: (ctx: TerminalContext) => {
+      // Programs call ctx.get('exitProgram')() to return to the prompt
       ctx.set('exitProgram', () => {
         const activeDef = ctx.get<ProgramDefinition>(ACTIVE_PROGRAM_KEY)
         if (activeDef) {
@@ -107,7 +108,9 @@ export function programs(programDefs: ProgramDefinition[]): TerminalPlugin {
           ctx.setActiveProgram(null)
         }
       })
+    },
 
+    beforeCommand: (cmd: string, args: string[], ctx: TerminalContext): CommandResult | void => {
       // Check if a program is currently active
       const activeDef = ctx.get<ProgramDefinition>(ACTIVE_PROGRAM_KEY)
 
@@ -176,21 +179,6 @@ export function programs(programDefs: ProgramDefinition[]): TerminalPlugin {
       programDef.onStart(ctx)
 
       return { handled: true }
-    },
-
-    onKeyDown: (key: string, ctx: TerminalContext): boolean => {
-      const activeDef = ctx.get<ProgramDefinition>(ACTIVE_PROGRAM_KEY)
-
-      if (!activeDef) {
-        return false // No active program
-      }
-
-      // Let program handle special keys
-      if (activeDef.onKeyDown) {
-        return activeDef.onKeyDown(key, ctx)
-      }
-
-      return false
     },
   }
 }

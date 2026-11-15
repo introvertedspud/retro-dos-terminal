@@ -2,7 +2,7 @@
  * Core types for react-dos-terminal
  */
 
-import type { ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 
 // ============================================================================
 // Terminal Output
@@ -148,6 +148,8 @@ export interface TerminalContext {
   input: string
   /** Set input value */
   setInput: (value: string) => void
+  /** Names of all registered commands (lowercase, sorted) */
+  commands: string[]
 }
 
 /** Plugin interface */
@@ -179,10 +181,13 @@ export interface TerminalPlugin {
   ) => void
 
   /** Handle keyboard events - return true to prevent default handling */
-  onKeyDown?: (key: string, ctx: TerminalContext) => boolean
+  onKeyDown?: (key: string, ctx: TerminalContext, event?: KeyboardEvent<HTMLInputElement>) => boolean
 
   /** Render additional UI (for effects, overlays, etc.) */
   render?: (ctx: TerminalContext) => ReactNode
+
+  /** CSS custom properties applied to the terminal root (e.g. { '--crt-glow-color': '#0f0' }) */
+  cssVariables?: Record<string, string>
 }
 
 // ============================================================================
@@ -201,8 +206,8 @@ export interface TerminalProgram {
   stop: () => void
   /** Handle text input while active */
   handleInput?: (input: string, ctx: TerminalContext) => CommandResult
-  /** Handle key events while active */
-  handleKeyDown?: (key: string, ctx: TerminalContext) => boolean
+  /** Handle key events while active (the event carries modifier state) */
+  handleKeyDown?: (key: string, ctx: TerminalContext, event?: KeyboardEvent<HTMLInputElement>) => boolean
   /** Render custom UI while active */
   render?: () => ReactNode
 }

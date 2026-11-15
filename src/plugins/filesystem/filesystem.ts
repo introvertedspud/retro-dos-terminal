@@ -52,6 +52,7 @@ function normalizePath(path: string): string {
  *
  * Handles:
  * - Absolute paths (C:\...)
+ * - Root-relative paths (\GAMES)
  * - Parent directory (..)
  * - Current directory (.)
  * - Simple relative paths (GAMES, GAMES\SNAKE.EXE)
@@ -59,28 +60,25 @@ function normalizePath(path: string): string {
 function resolvePath(from: string, to: string): string {
   const normalizedTo = normalizePath(to)
 
-  // If `to` is an absolute path (starts with drive letter), return it
-  if (/^[A-Z]:\\/.test(normalizedTo)) {
-    return normalizedTo
+  // Absolute paths (C:\...) start from their drive root, root-relative
+  // paths (\GAMES) from the current drive's root, others from `from`
+  const drive = normalizedTo.match(/^[A-Z]:\\/)?.[0]
+  let result = drive ?? normalizePath(from)
+  if (!drive && normalizedTo.startsWith('\\')) {
+    result = result.slice(0, 3)
   }
 
-  // Start from the normalized base
-  let result = normalizePath(from)
-
-  // Split the relative path into parts
-  const parts = normalizedTo.split('\\').filter(Boolean)
+  // Walk the remaining parts so "." and ".." work anywhere in the path
+  const parts = normalizedTo.slice(drive?.length ?? 0).split('\\').filter(Boolean)
 
   for (const part of parts) {
     if (part === '.') {
       // Current directory - do nothing
       continue
     } else if (part === '..') {
-      // Parent directory - go up one level
+      // Parent directory - go up one level, stopping at the root (C:\)
       const lastSlash = result.lastIndexOf('\\')
-      if (lastSlash > 2) {
-        // Don't go above root (C:\)
-        result = result.slice(0, lastSlash)
-      }
+      result = lastSlash > 2 ? result.slice(0, lastSlash) : result.slice(0, 3)
     } else {
       // Regular directory/file name - append
       result = result.endsWith('\\') ? result + part : result + '\\' + part
@@ -95,10 +93,10 @@ function resolvePath(from: string, to: string): string {
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { filesystem } from 'react-dos-terminal/plugins/filesystem'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { filesystem, type FileSystem } from 'retro-dos-terminal/plugins/filesystem'
  *
- * const files = {
+ * const files: FileSystem = {
  *   'C:\\': [
  *     { type: 'folder', name: 'GAMES' },
  *     { type: 'file', name: 'README.TXT', content: ['Hello!'] }

@@ -12,8 +12,8 @@ import type { TerminalPlugin } from '../../core/types'
  *
  * @example
  * ```tsx
- * import { Terminal } from 'react-dos-terminal'
- * import { cls } from 'react-dos-terminal/plugins/commands'
+ * import { Terminal } from 'retro-dos-terminal'
+ * import { cls } from 'retro-dos-terminal/plugins/commands'
  *
  * <Terminal plugins={[cls()]} />
  * // Type "cls" to clear the screen

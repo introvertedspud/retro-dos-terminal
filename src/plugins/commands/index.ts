@@ -5,10 +5,10 @@
  */
 
 export { cls } from './cls'
-export { dir } from './dir'
+export { dir, type DirOptions } from './dir'
 export { cd } from './cd'
 export { type } from './type'
-export { help } from './help'
+export { help, type HelpOptions } from './help'
 export { exit } from './exit'
 export { echo } from './echo'
-export { ver } from './ver'
+export { ver, type VerOptions } from './ver'
