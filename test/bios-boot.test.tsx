@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BIOSBoot } from '../src/boot'
 
@@ -32,9 +33,15 @@ describe('BIOSBoot', () => {
     expect(container.querySelector('style')).toBeNull()
   })
 
-  it('renders children immediately at instant speed', () => {
-    render(<BIOSBoot speed="instant"><div>DOS READY</div></BIOSBoot>)
+  it('renders children immediately at instant speed and completes once', () => {
+    const onComplete = vi.fn()
+    render(
+      <StrictMode>
+        <BIOSBoot speed="instant" onComplete={onComplete}><div>DOS READY</div></BIOSBoot>
+      </StrictMode>
+    )
     expect(screen.getByText('DOS READY')).toBeTruthy()
+    expect(onComplete).toHaveBeenCalledOnce()
   })
 
   it('calls onSkip and onComplete exactly once when skipped by a key', () => {

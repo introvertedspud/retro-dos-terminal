@@ -211,7 +211,15 @@ export function BIOSBoot({
 
   // Boot sequence - only run once
   useEffect(() => {
-    if (speed === 'instant' || bootComplete || bootInitialized.current) return
+    if (speed === 'instant') {
+      // Nothing to animate, but callers still rely on onComplete
+      if (!finishedRef.current) {
+        finishedRef.current = true
+        onComplete?.()
+      }
+      return
+    }
+    if (bootComplete || bootInitialized.current) return
 
     // Mark as initialized to prevent re-runs
     bootInitialized.current = true

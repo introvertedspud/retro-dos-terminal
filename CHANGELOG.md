@@ -36,6 +36,7 @@ All notable changes to this project are documented here. The format is based on
 - Programs could not exit: the `exitProgram` helper read stale shared state. Plugins now always read the current shared state, including in `setup`.
 - DOSKEY consumed arrow keys while a program was running.
 - `BIOSBoot` called `onComplete` up to three times when skipped.
+- `BIOSBoot` never called `onComplete` with `speed="instant"`.
 - `BIOSBoot` replaced the bundled VGA font with system fonts, and its blank lines collapsed.
 - CRT overlays scrolled out of view once output filled the terminal.
 - The CRT `glowColor` and `glowIntensity` options had no effect.
