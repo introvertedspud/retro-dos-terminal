@@ -43,7 +43,7 @@ All notable changes to this project are documented here. The format is based on
 - Rendering `<Terminal />` without plugins logged a warning on every re-render.
 - The cursor did not dim when the terminal lost focus.
 - DOSKEY dropped the quotes from recalled arguments that contained spaces.
-- The README documented APIs that do not exist, and JSDoc examples imported from the wrong package name.
+- The README documented APIs that do not exist, some examples did not type-check, and JSDoc examples imported from the wrong package name or used options that do not exist.
 
 ## [0.1.0] - 2025-12-13
 

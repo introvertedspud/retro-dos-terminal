@@ -59,7 +59,7 @@ function matchesProgram(filename: string, commands: string[]): boolean {
  * @example
  * ```tsx
  * import { programs, defineProgram } from 'retro-dos-terminal/plugins/programs'
- * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+ * import { filesystem, type FileSystem } from 'retro-dos-terminal/plugins/filesystem'
  *
  * const helloProgram = defineProgram({
  *   commands: ['hello', 'hello.exe'],
@@ -75,7 +75,7 @@ function matchesProgram(filename: string, commands: string[]): boolean {
  * })
  *
  * // Filesystem must have a matching executable file
- * const files = {
+ * const files: FileSystem = {
  *   'C:\\': [
  *     { type: 'file', name: 'HELLO.EXE', executable: true }
  *   ]

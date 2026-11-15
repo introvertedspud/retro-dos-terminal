@@ -30,11 +30,11 @@ import type { ProgramDefinition } from './programs'
  * })
  * ```
  *
- * @example With directory restriction
+ * @example Capturing keys
  * ```tsx
+ * // Runs from any directory that contains SNAKE.EXE
  * const gameProgram = defineProgram({
  *   commands: ['snake', 'snake.exe'],
- *   directories: ['C:\\GAMES'],  // Only runs from C:\GAMES
  *   onStart: (ctx) => ctx.print('Starting Snake...'),
  *   onInput: (input, ctx) => {
  *     // Handle game input

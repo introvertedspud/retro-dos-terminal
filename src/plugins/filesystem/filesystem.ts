@@ -94,9 +94,9 @@ function resolvePath(from: string, to: string): string {
  * @example
  * ```tsx
  * import { Terminal } from 'retro-dos-terminal'
- * import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+ * import { filesystem, type FileSystem } from 'retro-dos-terminal/plugins/filesystem'
  *
- * const files = {
+ * const files: FileSystem = {
  *   'C:\\': [
  *     { type: 'folder', name: 'GAMES' },
  *     { type: 'file', name: 'README.TXT', content: ['Hello!'] }

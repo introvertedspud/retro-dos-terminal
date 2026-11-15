@@ -6,9 +6,10 @@
  * @example
  * ```tsx
  * import { BIOSBoot } from 'retro-dos-terminal/boot'
+ * import { DOSTerminal } from 'retro-dos-terminal/presets/dos'
  *
  * <BIOSBoot preset="award" onComplete={() => console.log('Ready!')}>
- *   <Terminal plugins={[filesystem]} />
+ *   <DOSTerminal filesystem={files} />
  * </BIOSBoot>
  * ```
  */

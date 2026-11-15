@@ -166,9 +166,9 @@ help({
 A virtual filesystem keyed by directory path. Each directory maps to a list of its entries:
 
 ```tsx
-import { filesystem } from 'retro-dos-terminal/plugins/filesystem'
+import { filesystem, type FileSystem } from 'retro-dos-terminal/plugins/filesystem'
 
-const files = {
+const files: FileSystem = {
   'C:\\': [
     { type: 'file', name: 'AUTOEXEC.BAT', size: 10, content: ['@ECHO OFF'] },
     { type: 'folder', name: 'DOS' },
@@ -222,6 +222,7 @@ Interactive programs take over input until they exit. A program only runs when a
 
 ```tsx
 import { programs, defineProgram } from 'retro-dos-terminal/plugins/programs'
+import { filesystem, type FileSystem } from 'retro-dos-terminal/plugins/filesystem'
 
 const hello = defineProgram({
   commands: ['hello', 'hello.exe'],
@@ -238,7 +239,7 @@ const hello = defineProgram({
   onKeyDown: (key, ctx) => false,
 })
 
-const files = {
+const files: FileSystem = {
   'C:\\': [{ type: 'file', name: 'HELLO.EXE', executable: true }],
 }
 

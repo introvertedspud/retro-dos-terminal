@@ -52,8 +52,9 @@ export interface DOSTerminalProps {
  * @example Basic usage
  * ```tsx
  * import { DOSTerminal } from 'retro-dos-terminal/presets/dos'
+ * import type { FileSystem } from 'retro-dos-terminal'
  *
- * const files = {
+ * const files: FileSystem = {
  *   'C:\\': [
  *     { type: 'folder', name: 'GAMES' },
  *     { type: 'file', name: 'README.TXT', content: ['Hello!'] },
