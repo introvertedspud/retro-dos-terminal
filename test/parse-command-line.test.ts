@@ -10,8 +10,15 @@ describe('parseCommandLine', () => {
     expect(parseCommandLine('echo   a    b')).toEqual({ cmd: 'echo', args: ['a', 'b'] })
   })
 
-  it('keeps quoted strings together', () => {
-    expect(parseCommandLine(`echo "a  b" 'c d'`)).toEqual({ cmd: 'echo', args: ['a  b', 'c d'] })
+  it('keeps double-quoted strings together', () => {
+    expect(parseCommandLine('echo "a  b" c')).toEqual({ cmd: 'echo', args: ['a  b', 'c'] })
+  })
+
+  it('treats apostrophes as ordinary characters, like DOS', () => {
+    expect(parseCommandLine("echo it's what I'm after")).toEqual({
+      cmd: 'echo',
+      args: ["it's", 'what', "I'm", 'after'],
+    })
   })
 
   it('returns an empty command for empty input', () => {

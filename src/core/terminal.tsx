@@ -57,17 +57,13 @@ export function parseCommandLine(input: string): { cmd: string; args: string[] }
   const parts: string[] = []
   let current = ''
   let inQuotes = false
-  let quoteChar = ''
 
   for (let i = 0; i < input.length; i++) {
     const char = input[i]
 
-    if ((char === '"' || char === "'") && !inQuotes) {
-      inQuotes = true
-      quoteChar = char
-    } else if (char === quoteChar && inQuotes) {
-      inQuotes = false
-      quoteChar = ''
+    // Only double quotes group words in DOS; apostrophes are literal (echo it's)
+    if (char === '"') {
+      inQuotes = !inQuotes
     } else if (char === ' ' && !inQuotes) {
       if (current) {
         parts.push(current)
