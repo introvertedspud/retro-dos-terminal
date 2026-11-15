@@ -24,7 +24,7 @@ All notable changes to this project are documented here. The format is based on
 - **Program UI:** an active program's `render()` output now sits inside the scrolling viewport, after the input line, so it scrolls with the output.
 - **`TerminalContext`:** `commands` is a new required member. Code that builds its own context object, such as test mocks, needs to add it.
 - The context passed to a plugin's `setup` now always reads current values, so plugins that keep it for later see the latest `cwd`, `input` and `commands`.
-- Built files are now `.js` and `.d.ts` instead of `.mjs` and `.d.mts`. Imports through the package's entry points are unaffected; only deep imports of `dist/` files need updating.
+- Built files are now `.js` and `.d.ts` instead of `.mjs` and `.d.mts`, and shared code moved to `dist/chunks/`. Imports through the package's entry points are unaffected; only deep imports of `dist/` files need updating.
 - `HELP` lists only the commands that are installed.
 - The cursor follows the text caret instead of always sitting at the end of the line. The block cursor is one character wide and inverts the character under it.
 - Plugin command names are matched case-insensitively.

@@ -64,7 +64,7 @@
       "types": "./dist/boot/index.d.ts",
       "import": "./dist/boot/index.js"
     },
-    "./styles.css": "./dist/terminal.css",
+    "./styles.css": "./dist/chunks/terminal.css",
     "./plugins/effects/styles.css": "./dist/plugins/effects/index.css"
   },
   "files": [

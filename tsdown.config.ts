@@ -22,6 +22,9 @@ export default defineConfig({
   css: { splitting: true },
   // Disable content hashing for predictable filenames
   hash: false,
-  // The CSS transformer leaves url() untouched, so mirror src/core/fonts next to the CSS
-  copy: [{ from: 'src/core/fonts/dos-vga.woff', to: 'dist/fonts' }],
+  // Keep shared chunks apart from entries; without hashes, a chunk from
+  // boot/index was emitted as dist/index.d.ts and displaced the root types
+  outputOptions: { chunkFileNames: 'chunks/[name].js' },
+  // The CSS transformer leaves url() untouched, so mirror src/core/fonts next to the core CSS
+  copy: [{ from: 'src/core/fonts/dos-vga.woff', to: 'dist/chunks/fonts' }],
 })

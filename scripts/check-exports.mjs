@@ -1,7 +1,7 @@
 /**
  * Verifies the built package the way a consumer sees it: every export target
- * exists, each JS entry imports through the exports map, the types resolve,
- * and url()s inside the CSS point at shipped files.
+ * exists, each JS entry imports through the exports map, every runtime export
+ * is also visible to TypeScript, and url()s inside the CSS point at shipped files.
  *
  * Run after `npm run build`.
  */
@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 const failures = []
+const runtimeExports = {}
 const fail = (message) => failures.push(message)
 
 const targets = [pkg.main, pkg.module, pkg.types]
@@ -25,7 +26,8 @@ for (const [subpath, target] of Object.entries(pkg.exports)) {
     const specifier = pkg.name + subpath.slice(1)
     try {
       const mod = await import(specifier)
-      if (Object.keys(mod).length === 0) fail(`${specifier} has no exports`)
+      runtimeExports[specifier] = Object.keys(mod)
+      if (runtimeExports[specifier].length === 0) fail(`${specifier} has no exports`)
     } catch (err) {
       fail(`import('${specifier}') failed: ${err.message}`)
     }
@@ -45,13 +47,16 @@ for (const css of targets.filter((t) => t.endsWith('.css'))) {
   }
 }
 
-// Typecheck a consumer that imports every entry point through the exports map
-const typeEntries = Object.entries(pkg.exports).filter(([, t]) => typeof t === 'object')
+// Typecheck a consumer that imports every runtime export by name, so types
+// that resolve to the wrong declaration file fail here
 const dir = mkdtempSync(join(ROOT, '.check-exports-'))
 try {
   writeFileSync(
     join(dir, 'consumer.ts'),
-    typeEntries.map(([subpath], i) => `import * as m${i} from '${pkg.name}${subpath.slice(1)}'\nvoid m${i}`).join('\n')
+    Object.entries(runtimeExports).map(([specifier, names], i) =>
+      `import { ${names.map((n) => `${n} as m${i}_${n}`).join(', ')} } from '${specifier}'\n` +
+      `void [${names.map((n) => `m${i}_${n}`).join(', ')}]`
+    ).join('\n')
   )
   execFileSync(
     join(ROOT, 'node_modules/.bin/tsc'),
