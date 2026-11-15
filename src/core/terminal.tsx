@@ -36,6 +36,9 @@ import './terminal.css'
 // Utilities
 // ============================================================================
 
+/** useLayoutEffect warns during server rendering on React 18, where it can't run anyway */
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
+
 /** Shared default so an omitted plugins prop keeps a stable reference */
 const NO_PLUGINS: TerminalPlugin[] = []
 
@@ -236,7 +239,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     }, [])
 
     // Programmatic input changes (e.g. DOSKEY recall) move the caret too
-    useLayoutEffect(syncCaret, [input, syncCaret])
+    useIsomorphicLayoutEffect(syncCaret, [input, syncCaret])
 
     // Scroll to bottom when history changes
     useEffect(() => {
@@ -394,7 +397,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
     // setup() runs once, but plugins often keep its ctx for later (e.g. in
     // closures). Hand them a view that always reads the latest render's ctx.
     const ctxRef = useRef(ctx)
-    useLayoutEffect(() => {
+    useIsomorphicLayoutEffect(() => {
       ctxRef.current = ctx
     }, [ctx])
     const liveCtx = useMemo(

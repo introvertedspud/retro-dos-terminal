@@ -25,6 +25,8 @@ export default defineConfig({
   // Keep shared chunks apart from entries; without hashes, a chunk from
   // boot/index was emitted as dist/index.d.ts and displaced the root types
   outputOptions: { chunkFileNames: 'chunks/[name].js' },
+  // Everything here needs the browser, so React Server Components treat it as client code
+  banner: { js: "'use client'" },
   // The CSS transformer leaves url() untouched, so mirror src/core/fonts next to the core CSS
   copy: [{ from: 'src/core/fonts/dos-vga.woff', to: 'dist/chunks/fonts' }],
 })
