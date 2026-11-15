@@ -9,14 +9,13 @@ All notable changes to this project are documented here. The format is based on
 ### Added
 
 - `DIR /P` pauses after each screen with "Press any key to continue . . .". Page size is set with `dir({ pageSize })`. Ctrl+C stops the listing, and browser shortcuts such as copy still work while paused.
-- `HELP command` and `command /?` show usage for built-in commands. Custom commands can be documented with `help({ descriptions, usage })`.
+- `HELP command` and `command /?` show usage for any installed command HELP knows about. Custom commands can be documented with `help({ descriptions, usage })`.
 - DOS shorthand without a space: `cd..`, `cd\`, `dir/w`.
 - Root-relative paths such as `cd \GAMES`.
 - `ctx.commands` lists the registered command names.
 - Key handlers (`onKeyDown` on plugins and programs) receive the keyboard event as a third argument, for checking Ctrl, Alt and Meta.
 - Plugins can set CSS custom properties on the terminal root with `cssVariables`.
 - Built files start with a `'use client'` directive, so they work in React Server Components apps such as the Next.js App Router without a wrapper.
-- `HELP` adds a `beforeCommand` hook so that `command /?` shows usage for any installed command it knows about.
 - Root exports for `PartialTheme`, `TerminalProgram`, `FileNode`, `FileSystem`, `TerminalColors`, `TerminalCursor`, `TerminalFont` and `TerminalEffects`. The commands entry also exports `DirOptions`, `HelpOptions` and `VerOptions`.
 
 ### Changed
