@@ -33,6 +33,12 @@ npm install retro-dos-terminal
 
 Requires React 18 or later.
 
+The examples import the stylesheet with `import 'retro-dos-terminal/styles.css'`. Vite and Next.js already declare CSS imports for TypeScript. Without such a declaration, TypeScript 6 reports error TS2882; add one in any `.d.ts` file:
+
+```ts
+declare module '*.css'
+```
+
 ## Quick Start
 
 The DOS preset wires up the filesystem, DOSKEY, and every built-in command:
