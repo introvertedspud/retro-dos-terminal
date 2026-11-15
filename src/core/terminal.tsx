@@ -590,7 +590,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
         // An active program gets first pick of keys (e.g. arrows for games)
         if (activeProgram?.handleKeyDown) {
           try {
-            if (activeProgram.handleKeyDown(e.key, ctx)) {
+            if (activeProgram.handleKeyDown(e.key, ctx, e)) {
               e.preventDefault()
               return
             }
@@ -603,7 +603,7 @@ export const Terminal = forwardRef<TerminalHandle, TerminalProps>(
         for (const plugin of plugins) {
           if (plugin.onKeyDown) {
             try {
-              const handled = plugin.onKeyDown(e.key, ctx)
+              const handled = plugin.onKeyDown(e.key, ctx, e)
               if (handled) {
                 e.preventDefault()
                 return

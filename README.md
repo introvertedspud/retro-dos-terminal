@@ -263,7 +263,7 @@ Plugins can also define:
 
 - `setup` / `cleanup` - run on mount and unmount
 - `beforeCommand` / `afterCommand` - middleware around every command
-- `onKeyDown` - intercept keys (return `true` to consume)
+- `onKeyDown(key, ctx, event)` - intercept keys (return `true` to consume); `event` has the modifier state
 - `render` - draw overlays above the terminal
 - `cssVariables` - CSS custom properties set on the terminal root
 

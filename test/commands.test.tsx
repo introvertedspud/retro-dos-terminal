@@ -139,6 +139,26 @@ describe('DIR', () => {
       expect(t.prompt()).toBeNull()
     })
 
+    it('leaves browser shortcuts alone while paused', async () => {
+      const t = renderTerminal({ plugins: [filesystem({ files: many }), dir({ pageSize: 10 })] })
+      await t.run('dir /p')
+      const before = t.lines().length
+      expect(fireEvent.keyDown(t.input(), { key: 'c', metaKey: true })).toBe(true)
+      expect(fireEvent.keyDown(t.input(), { key: 'v', ctrlKey: true })).toBe(true)
+      expect(fireEvent.keyDown(t.input(), { key: 'r', altKey: true })).toBe(true)
+      expect(t.lines()).toHaveLength(before)
+      expect(t.prompt()).toBeNull()
+    })
+
+    it('stops the listing on Ctrl+C', async () => {
+      const t = renderTerminal({ plugins: [filesystem({ files: many }), dir({ pageSize: 10 })] })
+      await t.run('dir /p')
+      fireEvent.keyDown(t.input(), { key: 'c', ctrlKey: true })
+      expect(t.lastLine()).toBe('^C')
+      expect(t.lines()).not.toContain('(continuing C:\\)')
+      expect(t.prompt()).toBe('C:\\>')
+    })
+
     it('does not pause when only blank lines spill over', async () => {
       // The root listing is 12 lines ending in a blank one; with 11 per page
       // only that blank line spills over

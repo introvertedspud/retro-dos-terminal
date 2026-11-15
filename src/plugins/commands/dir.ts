@@ -140,8 +140,16 @@ function startPager(
     isActive: true,
     start: () => {},
     stop: () => {},
-    handleKeyDown: (key, keyCtx) => {
+    handleKeyDown: (key, keyCtx, event) => {
       if (MODIFIER_KEYS.has(key)) return true
+      // Ctrl+C aborts the listing, as in DOS
+      if (event?.ctrlKey && key.toLowerCase() === 'c') {
+        keyCtx.print('^C')
+        keyCtx.setActiveProgram(null)
+        return true
+      }
+      // Leave other shortcuts (copy, paste, reload) to the browser
+      if (event?.ctrlKey || event?.metaKey || event?.altKey) return false
       // Let Tab through so keyboard users can still move focus
       if (key === 'Tab') return false
 

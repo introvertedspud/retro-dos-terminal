@@ -8,7 +8,7 @@
  * The file must exist in the current directory and have `executable: true`.
  */
 
-import type { ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import type { TerminalPlugin, TerminalContext, TerminalProgram, CommandResult, FileNode } from '../../core/types'
 import type { FilesystemAPI } from '../filesystem/filesystem'
 
@@ -22,7 +22,7 @@ export interface ProgramDefinition {
   /** Handle text input while active - return handled: true to consume */
   onInput?: (input: string, ctx: TerminalContext) => CommandResult
   /** Handle key events while active - return true to consume */
-  onKeyDown?: (key: string, ctx: TerminalContext) => boolean
+  onKeyDown?: (key: string, ctx: TerminalContext, event?: KeyboardEvent<HTMLInputElement>) => boolean
   /** Render custom UI while active */
   render?: () => ReactNode
 }
